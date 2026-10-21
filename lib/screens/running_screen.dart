@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/running_shoe_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
@@ -17,6 +18,34 @@ class RunningScreen extends StatelessWidget {
     required this.onOpenDrawer,
     required this.onBackToHome,
   });
+
+  Future<void> _openHuaweiHealthApp(BuildContext context) async {
+    final uri = Uri.parse('huaweihealth://');
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        final storeUri = Uri.parse('https://apps.apple.com/id/app/huawei-health/id1329999978');
+        await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      final storeUri = Uri.parse('https://apps.apple.com/id/app/huawei-health/id1329999978');
+      await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _openHuaweiHealthSheet(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _HuaweiHealthModalSheet(
+        state: state,
+        onOpenStravaModal: () {
+          Navigator.pop(ctx);
+          _openConnectStravaSheet(context);
+        },
+      ),
+    );
+  }
 
   void _openAddRunSheet(BuildContext context) {
     showCupertinoModalPopup(
@@ -369,11 +398,17 @@ class RunningScreen extends StatelessWidget {
           ),
         ),
 
-        // Strava Integration Card
+        // Strava & Huawei Health Ecosystem Cards
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: _buildStravaCard(context, state, isDark),
+            child: Column(
+              children: [
+                _buildStravaCard(context, state, isDark),
+                const SizedBox(height: 12),
+                _buildHuaweiHealthCard(context, state, isDark),
+              ],
+            ),
           ),
         ),
 
@@ -818,6 +853,139 @@ class RunningScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHuaweiHealthCard(BuildContext context, DashboardState state, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppleColors.cardBg(isDark),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFE60012).withOpacity(0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE60012).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.watch_rounded, size: 12, color: Color(0xFFE60012)),
+                    SizedBox(width: 4),
+                    Text(
+                      'HUAWEI HEALTH & WATCH',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFE60012),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              const Text(
+                '⌚ Huawei GT/Band',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFE60012),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Huawei Health Hub',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              color: AppleColors.label(isDark),
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Buka aplikasi Huawei Health langsung di iPhone atau hubungkan otomatis ke Strava tanpa biaya langganan.',
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.35,
+              color: AppleColors.secondaryLabel(isDark),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              CupertinoButton(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                color: const Color(0xFFE60012),
+                borderRadius: BorderRadius.circular(12),
+                onPressed: () => _openHuaweiHealthApp(context),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.open_in_browser_rounded, size: 15, color: CupertinoColors.white),
+                    SizedBox(width: 6),
+                    Text(
+                      'Buka Huawei Health',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: CupertinoColors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              CupertinoButton(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7),
+                borderRadius: BorderRadius.circular(12),
+                onPressed: () => _openHuaweiHealthSheet(context),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.help_outline_rounded,
+                      size: 15,
+                      color: AppleColors.label(isDark),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Panduan Sync Gratis',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1715,7 +1883,35 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+
+                // Free guarantee banner
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF34C759).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF34C759).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(CupertinoIcons.checkmark_shield_fill, color: Color(0xFF34C759), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '100% GRATIS: Tidak perlu berlangganan Strava Summit / Premium (Rp 80rb+/bln). Abaikan penawaran berbayar di web Strava; akun gratis dapat membuat Personal Access Token tanpa biaya.',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? const Color(0xFF30D158) : const Color(0xFF248A3D),
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Tutorial Steps
                 Text(
@@ -1732,8 +1928,36 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
                 _buildStepItem(
                   number: '1',
                   title: 'Buka Pengaturan API Strava',
-                  desc: 'Buka browser dan login ke strava.com/settings/api',
+                  desc: 'Buka browser dan login ke strava.com/settings/api. Abaikan jika ada iklan langganan berbayar.',
                   isDark: isDark,
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.only(left: 36),
+                  child: CupertinoButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: () => launchUrl(
+                      Uri.parse('https://www.strava.com/settings/api'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.open_in_new_rounded, size: 13, color: Color(0xFFFC4C02)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Buka strava.com/settings/api',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppleColors.label(isDark),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 _buildStepItem(
@@ -1917,6 +2141,399 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HuaweiHealthModalSheet extends StatelessWidget {
+  final DashboardState state;
+  final VoidCallback onOpenStravaModal;
+
+  const _HuaweiHealthModalSheet({
+    required this.state,
+    required this.onOpenStravaModal,
+  });
+
+  Future<void> _openHuaweiApp() async {
+    final uri = Uri.parse('huaweihealth://');
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        final storeUri = Uri.parse('https://apps.apple.com/id/app/huawei-health/id1329999978');
+        await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      final storeUri = Uri.parse('https://apps.apple.com/id/app/huawei-health/id1329999978');
+      await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _openStravaApiUrl() async {
+    final uri = Uri.parse('https://www.strava.com/settings/api');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = state.isDarkMode;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          fontFamily: '.SF Pro Display',
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Tutup'),
+                    ),
+                    Text(
+                      'Huawei Health & Strava Sync',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    // Free clarification highlight
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF34C759).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF34C759).withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(CupertinoIcons.checkmark_seal_fill, color: Color(0xFF34C759), size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Kabar Baik: Strava API 100% Gratis!',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    decoration: TextDecoration.none,
+                                    color: Color(0xFF34C759),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Anda TIDAK perlu berlangganan Strava Summit / Premium (Rp 80rb+/bln). Iklan langganan di website Strava bisa diabaikan. Akun gratis tetap bebas membuat Personal Access Token untuk menarik data lari pribadi.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 1.35,
+                                    decoration: TextDecoration.none,
+                                    color: AppleColors.label(isDark),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Architecture Flow Diagram
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppleColors.separator(isDark)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ALUR SINKRONISASI OTOMATIS:',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                              decoration: TextDecoration.none,
+                              color: AppleColors.secondaryLabel(isDark),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildFlowNode(
+                                icon: Icons.watch_rounded,
+                                label: 'Huawei Watch',
+                                color: const Color(0xFFE60012),
+                                isDark: isDark,
+                              ),
+                              Icon(Icons.arrow_forward_rounded, size: 16, color: AppleColors.secondaryLabel(isDark)),
+                              _buildFlowNode(
+                                icon: Icons.phone_iphone_rounded,
+                                label: 'Huawei Health',
+                                color: const Color(0xFFE60012),
+                                isDark: isDark,
+                              ),
+                              Icon(Icons.arrow_forward_rounded, size: 16, color: AppleColors.secondaryLabel(isDark)),
+                              _buildFlowNode(
+                                icon: Icons.speed_rounded,
+                                label: 'Strava Free',
+                                color: const Color(0xFFFC4C02),
+                                isDark: isDark,
+                              ),
+                              Icon(Icons.arrow_forward_rounded, size: 16, color: AppleColors.secondaryLabel(isDark)),
+                              _buildFlowNode(
+                                icon: Icons.dashboard_rounded,
+                                label: 'Dashboard',
+                                color: const Color(0xFF007AFF),
+                                isDark: isDark,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+
+                    Text(
+                      'PANDUAN LANGKAH INTEGRASI:',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.secondaryLabel(isDark),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Step 1
+                    _buildStepCard(
+                      stepNumber: '1',
+                      title: 'Hubungkan Huawei Health ke Strava',
+                      description: 'Buka app Huawei Health di iPhone > tab "Saya" (Me) > "Manajemen Privasi" (Privacy Management) > "Layanan Pihak Ketiga" > pilih "Strava" lalu tekan "Tautkan".',
+                      actionButton: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        color: const Color(0xFFE60012),
+                        borderRadius: BorderRadius.circular(10),
+                        onPressed: _openHuaweiApp,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.open_in_browser_rounded, size: 14, color: CupertinoColors.white),
+                            SizedBox(width: 6),
+                            Text(
+                              'Buka App Huawei Health',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Step 2
+                    _buildStepCard(
+                      stepNumber: '2',
+                      title: 'Dapatkan Token Strava Gratis',
+                      description: 'Buka strava.com/settings/api di browser. Login, isi form app gratis jika diminta (nama: Personal Assistant, website: https://localhost). Gulir ke bawah lalu salin "Your API Access Token".',
+                      actionButton: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        color: const Color(0xFFFC4C02),
+                        borderRadius: BorderRadius.circular(10),
+                        onPressed: _openStravaApiUrl,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.open_in_new_rounded, size: 14, color: CupertinoColors.white),
+                            SizedBox(width: 6),
+                            Text(
+                              'Buka strava.com/settings/api',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Step 3
+                    _buildStepCard(
+                      stepNumber: '3',
+                      title: 'Tautkan Token ke Dashboard',
+                      description: 'Buka form "Tautkan Strava" di Personal Assistant ini lalu tempelkan token yang Anda salin. Setiap kali selesai lari pakai jam Huawei, cukup tap "Tarik Lari Terbaru"!',
+                      actionButton: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        color: const Color(0xFF007AFF),
+                        borderRadius: BorderRadius.circular(10),
+                        onPressed: onOpenStravaModal,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.link_rounded, size: 14, color: CupertinoColors.white),
+                            SizedBox(width: 6),
+                            Text(
+                              'Buka Form Tautkan Strava',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlowNode({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Column(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, color: color, size: 18),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w700,
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepCard({
+    required String stepNumber,
+    required String title,
+    required String description,
+    required Widget actionButton,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppleColors.cardBg(isDark),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppleColors.separator(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF007AFF),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  stepNumber,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    decoration: TextDecoration.none,
+                    color: CupertinoColors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.none,
+                    color: AppleColors.label(isDark),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.4,
+              decoration: TextDecoration.none,
+              color: AppleColors.secondaryLabel(isDark),
+            ),
+          ),
+          const SizedBox(height: 10),
+          actionButton,
         ],
       ),
     );
