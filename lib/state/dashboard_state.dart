@@ -2,6 +2,23 @@ import 'package:flutter/foundation.dart';
 import '../models/task_item.dart';
 import '../services/storage_service.dart';
 
+enum AppFeature {
+  home,
+  todo,
+  notes;
+
+  String get title {
+    switch (this) {
+      case AppFeature.home:
+        return 'Beranda';
+      case AppFeature.todo:
+        return 'To-Do List';
+      case AppFeature.notes:
+        return 'Catatan Cepat';
+    }
+  }
+}
+
 enum TaskFilter {
   today,
   scheduled,
@@ -25,11 +42,13 @@ enum TaskFilter {
 class DashboardState extends ChangeNotifier {
   final StorageService _storageService = StorageService();
 
+  AppFeature _currentFeature = AppFeature.home;
   List<TaskItem> _tasks = [];
   TaskFilter _selectedFilter = TaskFilter.all;
   String _selectedCategory = 'Semua';
   String _searchQuery = '';
   String _userName = 'Hasan';
+  String _quickNote = '';
   bool _isDarkMode = false;
   bool _isLoading = true;
 
@@ -38,11 +57,13 @@ class DashboardState extends ChangeNotifier {
   }
 
   // Getters
+  AppFeature get currentFeature => _currentFeature;
   List<TaskItem> get tasks => _tasks;
   TaskFilter get selectedFilter => _selectedFilter;
   String get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
   String get userName => _userName;
+  String get quickNote => _quickNote;
   bool get isDarkMode => _isDarkMode;
   bool get isLoading => _isLoading;
 
@@ -52,6 +73,7 @@ class DashboardState extends ChangeNotifier {
 
     _tasks = await _storageService.loadTasks();
     _userName = await _storageService.loadUserName();
+    _quickNote = await _storageService.loadQuickNote();
     final savedDark = await _storageService.loadIsDarkMode();
     if (savedDark != null) {
       _isDarkMode = savedDark;
@@ -59,6 +81,17 @@ class DashboardState extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  void setFeature(AppFeature feature) {
+    _currentFeature = feature;
+    notifyListeners();
+  }
+
+  Future<void> setQuickNote(String note) async {
+    _quickNote = note;
+    notifyListeners();
+    await _storageService.saveQuickNote(note);
   }
 
   // Filtered List

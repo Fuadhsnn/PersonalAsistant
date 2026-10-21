@@ -6,6 +6,7 @@ class StorageService {
   static const String _tasksKey = 'hasan_dashboard_tasks_v1';
   static const String _userNameKey = 'hasan_dashboard_user_name';
   static const String _themeDarkKey = 'hasan_dashboard_theme_dark';
+  static const String _quickNoteKey = 'hasan_dashboard_quick_note';
 
   Future<List<TaskItem>> loadTasks() async {
     final prefs = await SharedPreferences.getInstance();
@@ -84,6 +85,16 @@ class StorageService {
   Future<void> saveIsDarkMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_themeDarkKey, isDark);
+  }
+
+  Future<String> loadQuickNote() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_quickNoteKey) ?? '💡 Catatan Cepat:\n- Siapkan bahan presentasi kuliah\n- Ide fitur baru: habit tracker & pomodoro';
+  }
+
+  Future<void> saveQuickNote(String note) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_quickNoteKey, note);
   }
 
   List<TaskItem> _getSampleTasks() {
