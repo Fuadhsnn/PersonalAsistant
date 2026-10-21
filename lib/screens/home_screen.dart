@@ -5,6 +5,7 @@ import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../widgets/activity_rings_card.dart';
 import '../widgets/apple_burger_icon.dart';
+import '../widgets/apple_note_icon.dart';
 
 class HomeScreen extends StatelessWidget {
   final DashboardState state;
@@ -196,7 +197,7 @@ class HomeScreen extends StatelessWidget {
                   // Feature 2: Catatan Cepat
                   Expanded(
                     child: _FeatureCard(
-                      icon: CupertinoIcons.doc_text_fill,
+                      iconWidget: const AppleNoteIcon(color: CupertinoColors.white, size: 20),
                       iconColor: AppleColors.systemYellow,
                       title: 'Catatan Cepat',
                       subtitle: 'Memo instan',
@@ -393,7 +394,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _FeatureCard extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? iconWidget;
   final Color iconColor;
   final String title;
   final String subtitle;
@@ -402,7 +404,8 @@ class _FeatureCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _FeatureCard({
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.iconColor,
     required this.title,
     required this.subtitle,
@@ -445,7 +448,9 @@ class _FeatureCard extends StatelessWidget {
                     color: iconColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: CupertinoColors.white, size: 20),
+                  child: Center(
+                    child: iconWidget ?? Icon(icon, color: CupertinoColors.white, size: 20),
+                  ),
                 ),
                 const Icon(CupertinoIcons.chevron_forward, size: 16, color: Color(0xFFC7C7CC)),
               ],

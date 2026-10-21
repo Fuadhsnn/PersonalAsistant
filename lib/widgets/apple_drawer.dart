@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
+import 'apple_note_icon.dart';
 
 class AppleDrawer extends StatelessWidget {
   final DashboardState state;
@@ -131,7 +132,7 @@ class AppleDrawer extends StatelessWidget {
 
             // Item 3: Catatan Cepat (Notes)
             _DrawerItem(
-              icon: CupertinoIcons.doc_text_fill,
+              iconWidget: const AppleNoteIcon(color: CupertinoColors.white, size: 18),
               iconColor: AppleColors.systemYellow,
               label: 'Catatan Cepat',
               isSelected: currentFeature == AppFeature.notes,
@@ -250,7 +251,8 @@ class AppleDrawer extends StatelessWidget {
 }
 
 class _DrawerItem extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? iconWidget;
   final Color iconColor;
   final String label;
   final String? badgeText;
@@ -259,7 +261,8 @@ class _DrawerItem extends StatelessWidget {
   final bool isDark;
 
   const _DrawerItem({
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.iconColor,
     required this.label,
     this.badgeText,
@@ -293,7 +296,9 @@ class _DrawerItem extends StatelessWidget {
                   color: iconColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 18, color: CupertinoColors.white),
+                child: Center(
+                  child: iconWidget ?? Icon(icon, size: 18, color: CupertinoColors.white),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
