@@ -673,112 +673,155 @@ class _AddTransactionModalSheetState extends State<_AddTransactionModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Catat Transaksi',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                // Expense vs Income
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoSegmentedControl<bool>(
-                    groupValue: _isExpense,
-                    children: const {
-                      true: Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Pengeluaran (-)')),
-                      false: Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Pemasukan (+)')),
-                    },
-                    onValueChanged: (val) {
-                      setState(() {
-                        _isExpense = val;
-                        if (!_isExpense) _category = 'Pemasukan';
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                _buildFieldLabel('Deskripsi Transaksi *', isDark),
-                CupertinoTextField(
-                  controller: _titleController,
-                  placeholder: 'Contoh: Kopi Susu Jago, Isi Bensin, Gaji Freelance',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
-
-                _buildFieldLabel('Nominal Rupiah (Rp) *', isDark),
-                CupertinoTextField(
-                  controller: _amountController,
-                  placeholder: 'Contoh: 35000',
-                  keyboardType: TextInputType.number,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
-
-                _buildFieldLabel('Kategori', isDark),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: _inputDecoration(isDark),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _category,
-                      dropdownColor: AppleColors.cardBg(isDark),
-                      isExpanded: true,
-                      items: _categories.map((c) {
-                        return DropdownMenuItem(
-                          value: c,
-                          child: Text(c, style: TextStyle(color: AppleColors.label(isDark))),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _category = val);
-                      },
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
                     ),
-                  ),
+                    Text(
+                      'Catat Transaksi',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const Divider(height: 1),
+
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    // Expense vs Income
+                    SizedBox(
+                      width: double.infinity,
+                      child: CupertinoSlidingSegmentedControl<bool>(
+                        groupValue: _isExpense,
+                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA),
+                        thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                        children: {
+                          true: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Pengeluaran (-)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          false: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Pemasukan (+)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                        },
+                        onValueChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _isExpense = val;
+                              if (!_isExpense) _category = 'Pemasukan';
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Deskripsi Transaksi *', isDark),
+                    CupertinoTextField(
+                      controller: _titleController,
+                      placeholder: 'Contoh: Kopi Susu Jago, Isi Bensin, Gaji Freelance',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Nominal Rupiah (Rp) *', isDark),
+                    CupertinoTextField(
+                      controller: _amountController,
+                      placeholder: 'Contoh: 35000',
+                      keyboardType: TextInputType.number,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Kategori', isDark),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: _inputDecoration(isDark),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _category,
+                          dropdownColor: AppleColors.cardBg(isDark),
+                          isExpanded: true,
+                          items: _categories.map((c) {
+                            return DropdownMenuItem(
+                              value: c,
+                              child: Text(
+                                c,
+                                style: TextStyle(
+                                  color: AppleColors.label(isDark),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _category = val);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -791,6 +834,7 @@ class _AddTransactionModalSheetState extends State<_AddTransactionModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),
@@ -849,81 +893,92 @@ class _AddWishlistModalSheetState extends State<_AddWishlistModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.65,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Tambah Target Wishlist',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.65,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildFieldLabel('Nama Barang / Target *', isDark),
-                CupertinoTextField(
-                  controller: _nameController,
-                  placeholder: 'Contoh: Garmin Forerunner, Sepatu Race Day, Laptop Baru',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    Text(
+                      'Tambah Target Wishlist',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+              ),
+              const Divider(height: 1),
 
-                _buildFieldLabel('Target Harga (Rp) *', isDark),
-                CupertinoTextField(
-                  controller: _priceController,
-                  placeholder: 'Contoh: 3500000',
-                  keyboardType: TextInputType.number,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    _buildFieldLabel('Nama Barang / Target *', isDark),
+                    CupertinoTextField(
+                      controller: _nameController,
+                      placeholder: 'Contoh: Garmin Forerunner, Sepatu Race Day, Laptop Baru',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
 
-                _buildFieldLabel('Dana Terkumpul Awal (Rp)', isDark),
-                CupertinoTextField(
-                  controller: _savedController,
-                  placeholder: 'Contoh: 500000',
-                  keyboardType: TextInputType.number,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
+                    _buildFieldLabel('Target Harga (Rp) *', isDark),
+                    CupertinoTextField(
+                      controller: _priceController,
+                      placeholder: 'Contoh: 3500000',
+                      keyboardType: TextInputType.number,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Dana Terkumpul Awal (Rp)', isDark),
+                    CupertinoTextField(
+                      controller: _savedController,
+                      placeholder: 'Contoh: 500000',
+                      keyboardType: TextInputType.number,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -936,6 +991,7 @@ class _AddWishlistModalSheetState extends State<_AddWishlistModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),

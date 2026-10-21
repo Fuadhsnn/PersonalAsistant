@@ -84,19 +84,27 @@ class _SettingsSheetState extends State<SettingsSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppleColors.card(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.only(
-        top: 16,
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.textPrimary(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppleColors.card(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+            top: 16,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -341,7 +349,9 @@ class _SettingsSheetState extends State<SettingsSheet> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildSectionHeader(String title, bool isDark) {

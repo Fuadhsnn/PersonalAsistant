@@ -336,133 +336,203 @@ class _AddShortcutModalSheetState extends State<_AddShortcutModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Tambah Pintasan Baru',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildFieldLabel('Judul Pintasan *', isDark),
-                CupertinoTextField(
-                  controller: _titleController,
-                  placeholder: 'Contoh: Portal Mandiri Career, Kaggle, Duolingo',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
-
-                _buildFieldLabel('URL Web *', isDark),
-                CupertinoTextField(
-                  controller: _urlController,
-                  placeholder: 'Contoh: mandiri.co.id/career',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
-
-                _buildFieldLabel('Kategori & Icon', isDark),
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoSegmentedControl<String>(
-                    groupValue: _iconCode,
-                    children: const {
-                      'briefcase': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Karir')),
-                      'code': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Code')),
-                      'run': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Lari')),
-                      'ai': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('AI')),
-                      'globe': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Web')),
-                    },
-                    onValueChanged: (val) {
-                      setState(() {
-                        _iconCode = val;
-                        switch (val) {
-                          case 'briefcase':
-                            _category = 'Karir';
-                            break;
-                          case 'code':
-                            _category = 'Code';
-                            break;
-                          case 'run':
-                            _category = 'Running';
-                            break;
-                          case 'ai':
-                            _category = 'AI';
-                            break;
-                          default:
-                            _category = 'Umum';
-                        }
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                _buildFieldLabel('Pilih Warna Ikon', isDark),
-                Row(
-                  children: _colors.map((c) {
-                    final isSel = _selectedColor == c;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = c),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Color(c),
-                          shape: BoxShape.circle,
-                          border: isSel
-                              ? Border.all(color: CupertinoColors.white, width: 3)
-                              : null,
-                          boxShadow: [
-                            if (isSel)
-                              BoxShadow(color: Color(c).withOpacity(0.6), blurRadius: 8),
-                          ],
-                        ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    Text(
+                      'Tambah Pintasan Baru',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const Divider(height: 1),
+
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    _buildFieldLabel('Judul Pintasan *', isDark),
+                    CupertinoTextField(
+                      controller: _titleController,
+                      placeholder: 'Contoh: Portal Mandiri Career, Kaggle, Duolingo',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('URL Web *', isDark),
+                    CupertinoTextField(
+                      controller: _urlController,
+                      placeholder: 'Contoh: mandiri.co.id/career',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Kategori & Icon', isDark),
+                    SizedBox(
+                      width: double.infinity,
+                      child: CupertinoSlidingSegmentedControl<String>(
+                        groupValue: _iconCode,
+                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA),
+                        thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                        children: {
+                          'briefcase': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Karir',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'code': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Code',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'run': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Lari',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'ai': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'AI',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'globe': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Web',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                        },
+                        onValueChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _iconCode = val;
+                              switch (val) {
+                                case 'briefcase':
+                                  _category = 'Karir';
+                                  break;
+                                case 'code':
+                                  _category = 'Code';
+                                  break;
+                                case 'run':
+                                  _category = 'Running';
+                                  break;
+                                case 'ai':
+                                  _category = 'AI';
+                                  break;
+                                default:
+                                  _category = 'Umum';
+                              }
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildFieldLabel('Pilih Warna Ikon', isDark),
+                    Row(
+                      children: _colors.map((c) {
+                        final isSel = _selectedColor == c;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedColor = c),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Color(c),
+                              shape: BoxShape.circle,
+                              border: isSel
+                                  ? Border.all(color: CupertinoColors.white, width: 3)
+                                  : null,
+                              boxShadow: [
+                                if (isSel)
+                                  BoxShadow(color: Color(c).withOpacity(0.6), blurRadius: 8),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -475,6 +545,7 @@ class _AddShortcutModalSheetState extends State<_AddShortcutModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),

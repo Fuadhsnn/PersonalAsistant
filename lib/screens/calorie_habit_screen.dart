@@ -850,86 +850,145 @@ class _AddCalorieModalSheetState extends State<_AddCalorieModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.65,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Catat Makanan / Minuman',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold, color: AppleColors.systemOrange)),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.65,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildFieldLabel('Nama Makanan / Minuman *', isDark),
-                CupertinoTextField(
-                  controller: _foodController,
-                  placeholder: 'Contoh: Es Kopi Susu Aren, Nasi Campur, Telur Dada',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    Text(
+                      'Catat Makanan / Minuman',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold, color: AppleColors.systemOrange)),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+              ),
+              const Divider(height: 1),
 
-                _buildFieldLabel('Jumlah Kalori (kcal) *', isDark),
-                CupertinoTextField(
-                  controller: _calController,
-                  placeholder: 'Contoh: 350',
-                  keyboardType: TextInputType.number,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    _buildFieldLabel('Nama Makanan / Minuman *', isDark),
+                    CupertinoTextField(
+                      controller: _foodController,
+                      placeholder: 'Contoh: Es Kopi Susu Aren, Nasi Campur, Telur Dada',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
 
-                _buildFieldLabel('Waktu Makan', isDark),
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoSegmentedControl<String>(
-                    groupValue: _mealType,
-                    children: const {
-                      'Sarapan': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Sarapan')),
-                      'Makan Siang': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Siang')),
-                      'Makan Malam': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Malam')),
-                      'Camilan/Kopi': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Camilan')),
-                    },
-                    onValueChanged: (val) => setState(() => _mealType = val),
-                  ),
+                    _buildFieldLabel('Jumlah Kalori (kcal) *', isDark),
+                    CupertinoTextField(
+                      controller: _calController,
+                      placeholder: 'Contoh: 350',
+                      keyboardType: TextInputType.number,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    _buildFieldLabel('Waktu Makan', isDark),
+                    SizedBox(
+                      width: double.infinity,
+                      child: CupertinoSlidingSegmentedControl<String>(
+                        groupValue: _mealType,
+                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA),
+                        thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                        children: {
+                          'Sarapan': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Sarapan',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'Makan Siang': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Siang',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'Makan Malam': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Malam',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'Camilan/Kopi': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Camilan',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                        },
+                        onValueChanged: (val) {
+                          if (val != null) setState(() => _mealType = val);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -942,6 +1001,7 @@ class _AddCalorieModalSheetState extends State<_AddCalorieModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),
@@ -1004,86 +1064,98 @@ class _AddHabitModalSheetState extends State<_AddHabitModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.55,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Tambah Habit Baru',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          fontFamily: '.SF Pro Display',
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.55,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildFieldLabel('Nama Kebiasaan *', isDark),
-                CupertinoTextField(
-                  controller: _titleController,
-                  placeholder: 'Contoh: Baca Buku 15 Menit, Minum Air 2L',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 20),
-
-                _buildFieldLabel('Pilih Warna Tema', isDark),
-                Row(
-                  children: _colors.map((c) {
-                    final isSel = _selectedColor == c;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedColor = c),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Color(c),
-                          shape: BoxShape.circle,
-                          border: isSel
-                              ? Border.all(color: CupertinoColors.white, width: 3)
-                              : null,
-                          boxShadow: [
-                            if (isSel)
-                              BoxShadow(color: Color(c).withOpacity(0.6), blurRadius: 8),
-                          ],
-                        ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    Text(
+                      'Tambah Habit Baru',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const Divider(height: 1),
+
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    _buildFieldLabel('Nama Kebiasaan *', isDark),
+                    CupertinoTextField(
+                      controller: _titleController,
+                      placeholder: 'Contoh: Baca Buku 15 Menit, Minum Air 2L',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildFieldLabel('Pilih Warna Tema', isDark),
+                    Row(
+                      children: _colors.map((c) {
+                        final isSel = _selectedColor == c;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedColor = c),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 12),
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Color(c),
+                              shape: BoxShape.circle,
+                              border: isSel
+                                  ? Border.all(color: CupertinoColors.white, width: 3)
+                                  : null,
+                              boxShadow: [
+                                if (isSel)
+                                  BoxShadow(color: Color(c).withOpacity(0.6), blurRadius: 8),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1096,6 +1168,7 @@ class _AddHabitModalSheetState extends State<_AddHabitModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),

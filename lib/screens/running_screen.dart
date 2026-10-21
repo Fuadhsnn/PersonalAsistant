@@ -1182,13 +1182,21 @@ class _AddRunModalSheetState extends State<_AddRunModalSheet> {
     final isDark = widget.state.isDarkMode;
     final shoes = widget.state.activeShoes;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -1290,7 +1298,9 @@ class _AddRunModalSheetState extends State<_AddRunModalSheet> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFieldLabel(String label, bool isDark) {
@@ -1301,6 +1311,7 @@ class _AddRunModalSheetState extends State<_AddRunModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),
@@ -1374,13 +1385,21 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -1505,7 +1524,9 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFieldLabel(String label, bool isDark) {
@@ -1516,6 +1537,7 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),
@@ -1581,13 +1603,21 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
         children: [
           // Header Bar
           Padding(
@@ -1824,7 +1854,9 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildStepItem({

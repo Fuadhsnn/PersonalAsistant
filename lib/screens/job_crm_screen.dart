@@ -726,93 +726,137 @@ class _AddJobModalSheetState extends State<_AddJobModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: AppleColors.cardBg(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // Header Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  widget.existing != null ? 'Edit Lamaran' : 'Tambah Lamaran',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: DefaultTextStyle(
+        style: TextStyle(
+          decoration: TextDecoration.none,
+          color: AppleColors.label(isDark),
+          fontSize: 14,
+        ),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: AppleColors.cardBg(isDark),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          const Divider(height: 1),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                // Company
-                _buildFieldLabel('Nama Perusahaan *', isDark),
-                CupertinoTextField(
-                  controller: _companyController,
-                  placeholder: 'Contoh: GoTo, Traveloka, Shopee, Mandiri',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
+          child: Column(
+            children: [
+              // Header Bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal'),
+                    ),
+                    Text(
+                      widget.existing != null ? 'Edit Lamaran' : 'Tambah Lamaran',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _save,
+                      child: const Text(
+                        'Simpan',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+              ),
+              const Divider(height: 1),
 
-                // Position
-                _buildFieldLabel('Posisi yang Dilamar *', isDark),
-                CupertinoTextField(
-                  controller: _positionController,
-                  placeholder: 'Contoh: Data Analyst / Backend Engineer',
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: _inputDecoration(isDark),
-                  style: TextStyle(color: AppleColors.label(isDark)),
-                ),
-                const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    // Company
+                    _buildFieldLabel('Nama Perusahaan *', isDark),
+                    CupertinoTextField(
+                      controller: _companyController,
+                      placeholder: 'Contoh: GoTo, Traveloka, Shopee, Mandiri',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
 
-                // Work System Segmented
-                _buildFieldLabel('Sistem Kerja', isDark),
-                SizedBox(
-                  width: double.infinity,
-                  child: CupertinoSegmentedControl<String>(
-                    groupValue: _workSystem,
-                    children: const {
-                      'Remote': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Remote')),
-                      'Hybrid': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('Hybrid')),
-                      'On-site': Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('On-site')),
-                    },
-                    onValueChanged: (val) {
-                      setState(() => _workSystem = val);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
+                    // Position
+                    _buildFieldLabel('Posisi yang Dilamar *', isDark),
+                    CupertinoTextField(
+                      controller: _positionController,
+                      placeholder: 'Contoh: Data Analyst / Backend Engineer',
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      decoration: _inputDecoration(isDark),
+                      style: TextStyle(color: AppleColors.label(isDark)),
+                    ),
+                    const SizedBox(height: 16),
 
-                // Salary Expectation
-                _buildFieldLabel('Ekspektasi Gaji', isDark),
+                    // Work System Segmented
+                    _buildFieldLabel('Sistem Kerja', isDark),
+                    SizedBox(
+                      width: double.infinity,
+                      child: CupertinoSlidingSegmentedControl<String>(
+                        groupValue: _workSystem,
+                        backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA),
+                        thumbColor: isDark ? const Color(0xFF2C2C2E) : CupertinoColors.white,
+                        children: {
+                          'Remote': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Remote',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'Hybrid': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Hybrid',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                          'On-site': Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'On-site',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.none,
+                                color: AppleColors.label(isDark),
+                              ),
+                            ),
+                          ),
+                        },
+                        onValueChanged: (val) {
+                          if (val != null) setState(() => _workSystem = val);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Salary Expectation
+                    _buildFieldLabel('Ekspektasi Gaji', isDark),
                 CupertinoTextField(
                   controller: _salaryController,
                   placeholder: 'Contoh: Rp 8.000.000 - 10.000.000',
@@ -868,7 +912,9 @@ class _AddJobModalSheetState extends State<_AddJobModalSheet> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFieldLabel(String label, bool isDark) {
@@ -879,6 +925,7 @@ class _AddJobModalSheetState extends State<_AddJobModalSheet> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
           color: AppleColors.secondaryLabel(isDark),
         ),
       ),
