@@ -85807,7 +85807,7 @@ l=p?B.f:B.bD
 k=p?B.P5:B.Pp
 j=A.ax0().$2$color$fontSize(p?B.d:B.f,16)
 s=A.ax0().$3$color$fontSize$fontWeight(p?B.d:B.f,17,B.z)
-return new A.q8(new A.tG(new A.pl(B.mj,m,B.y,r,A.aML(A.ax0().$4$color$fontSize$fontWeight$letterSpacing(p?B.d:B.f,34,B.A,-0.5),s,B.hx,j),k,l,r,r),new A.Aq(q,r),r),"Personal Assistant",n,!1,r)},
+return new A.q8(new A.tG(new A.pl(B.mj,m,B.y,r,A.aML(A.ax0().$4$color$fontSize$fontWeight$letterSpacing(p?B.d:B.f,34,B.A,-0.5),s,B.hx,j),k,l,r,r),new A.Aq(q,r),r),"ARIES",n,!1,r)},
 $S:507}
 A.Aq.prototype={
 aa(){return new A.Ty(new A.bn(null,t.sW))}}
@@ -86597,7 +86597,7 @@ p=A.b([new A.aI(0,B.F,p,B.bK,8)],o)
 s=A.au(B.p,a0,A.Y(a0,A.es(new A.iK(a2?B.d:B.f,18,a0),a0,a0),B.j,a0,a0,new A.U(s,a0,a0,a0,p,a0,a0,B.a9),a0,40,a0,a0,a0,a0,40),a0,B.w,a0,B.a2,a.d,B.x,0.4)
 p=A.c4(B.T2,a2?B.d:B.f,a0,18)
 n=t.p
-p=A.a8(A.b([p,B.bO,A.H("PERSONAL ASSISTANT",a0,a0,a0,A.t(a0,a0,B.v,a0,a0,a0,a0,a0,a0,a0,a0,12,a0,a0,B.A,a0,a0,!0,a0,1,a0,a0,a0,a0,a0,a0),a0,a0)],n),B.n,B.k,B.l,a0)
+p=A.a8(A.b([p,B.bO,A.H("ARIES \u2022 LIFE OS",a0,a0,a0,A.t(a0,a0,B.v,a0,a0,a0,a0,a0,a0,a0,a0,12,a0,a0,B.A,a0,a0,!0,a0,1,a0,a0,a0,a0,a0,a0),a0,a0)],n),B.n,B.k,B.l,a0)
 m=a2?B.B:B.d
 o=A.b([new A.aI(0,B.F,a2?B.ec:B.cH,B.bK,8)],o)
 s=A.a8(A.b([s,p,A.au(B.p,a0,A.Y(a0,A.c4(B.uc,a2?B.d:B.f,a0,19),B.j,a0,a0,new A.U(m,a0,a0,a0,o,a0,a0,B.a9),a0,40,a0,a0,a0,a0,40),a0,B.w,a0,B.a2,a.e,B.x,0.4)],n),B.n,B.a7,B.l,a0)
@@ -89884,7 +89884,7 @@ A.J8.prototype={
 H(a7){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d=this,c=null,b=d.c,a=b.fy,a0=b.b,a1=b.gHD(),a2=b.gyW(),a3=b.gLS(),a4=a?B.B:B.d,a5=b.fr,a6=A.Y(B.p,A.H(a5.length!==0?a5[0].toUpperCase():"H",c,c,c,B.aee,c,c),B.j,c,c,B.MA,c,50,c,c,c,c,50)
 a5=A.H(a5,c,c,c,A.t(c,c,a?B.d:B.f,c,c,c,c,c,c,c,c,18,c,c,B.A,c,c,!0,c,-0.4,c,c,c,c,c,c),c,c)
 s=t.p
-a5=A.a8(A.b([a6,B.m_,A.bi(A.aE(A.b([a5,B.bt,A.H("Personal Assistant \uf8ff Life OS",c,c,c,A.t(c,c,B.v,c,c,c,c,c,c,c,c,12,c,c,c,c,c,!0,c,c,c,c,c,c,c,c),c,c)],s),B.K,B.k,B.l),1)],s),B.n,B.k,B.l,c)
+a5=A.a8(A.b([a6,B.m_,A.bi(A.aE(A.b([a5,B.bt,A.H("ARIES \uf8ff Life OS",c,c,c,A.t(c,c,B.v,c,c,c,c,c,c,c,c,12,c,c,c,c,c,!0,c,c,c,c,c,c,c,c),c,c)],s),B.K,B.k,B.l),1)],s),B.n,B.k,B.l,c)
 a6=A.Y(c,c,B.j,a?B.V:B.H,c,c,c,1,B.bE,c,c,c,c)
 r=A.H("FITUR UTAMA",c,c,c,A.t(c,c,B.v,c,c,c,c,c,c,c,c,11,c,c,B.A,c,c,!0,c,0.8,c,c,c,c,c,c),c,c)
 q=A.oa(c,c,B.SR,B.y,c,a,a0===B.cY,"Beranda (Home)",new A.ZC(d,a7))
@@ -89906,7 +89906,7 @@ f=A.al(14)
 e=A.Y(c,B.TS,B.j,c,c,B.My,c,30,c,c,c,c,30)
 b=A.bi(A.fx(A.b([new A.aj(B.tx,r,c),q,p,o,n,m,b,l,k,B.bP,j,B.bP,new A.aj(B.tx,i,c),h,new A.aj(B.R8,A.Y(c,A.a8(A.b([e,B.bf,A.bi(A.H("Mode Gelap (OLED)",c,c,c,A.t(c,c,a?B.d:B.f,c,c,c,c,c,c,c,c,14,c,c,B.aa,c,c,!0,c,c,c,c,c,c,c,c),c,c),1),A.aCl(B.y,new A.ZL(d),a)],s),B.n,B.k,B.l,c),B.j,c,c,new A.U(g,c,c,f,c,c,c,B.q),c,c,c,B.jO,c,c,c),c)],s),c,B.x,B.bc,c,B.a8,!1),1)
 r=A.H("iPhone 13 Edition \u2022 Apple HIG",c,c,c,A.t(c,c,B.v,c,c,c,c,c,c,c,c,12,c,c,c,c,c,!0,c,c,c,c,c,c,c,c),c,c)
-return new A.KJ(a4,16,A.az3(!0,A.aE(A.b([new A.aj(B.Rg,a5,c),a6,B.bP,b,new A.aj(B.b8,A.aE(A.b([r,B.bt,A.H("Personal Assistant Life OS v2.0",c,c,c,A.t(c,c,a?B.bd:B.bx,c,c,c,c,c,c,c,c,11,c,c,c,c,c,!0,c,c,c,c,c,c,c,c),c,c)],s),B.n,B.k,B.l),c)],s),B.bT,B.k,B.l),B.x,!0),c)}}
+return new A.KJ(a4,16,A.az3(!0,A.aE(A.b([new A.aj(B.Rg,a5,c),a6,B.bP,b,new A.aj(B.b8,A.aE(A.b([r,B.bt,A.H("ARIES Life OS v2.0",c,c,c,A.t(c,c,a?B.bd:B.bx,c,c,c,c,c,c,c,c,11,c,c,c,c,c,!0,c,c,c,c,c,c,c,c),c,c)],s),B.n,B.k,B.l),c)],s),B.bT,B.k,B.l),B.x,!0),c)}}
 A.ZC.prototype={
 $0(){var s=this.a.c
 s.b=B.cY

@@ -99,7 +99,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'PERSONAL ASSISTANT',
+                        'ARIES • LIFE OS',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

@@ -41,7 +41,7 @@ class _PersonalAssistantAppState extends State<PersonalAssistantApp> {
         final isDark = _dashboardState.isDarkMode;
 
         return MaterialApp(
-          title: 'Personal Assistant',
+          title: 'ARIES',
           debugShowCheckedModeBanner: false,
           theme: AppleTheme.materialTheme(isDark),
           home: CupertinoTheme(

@@ -1,11 +1,11 @@
 {
-    "name": "Personal Assistant",
-    "short_name": "Assistant",
+    "name": "ARIES",
+    "short_name": "ARIES",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
-    "description": "Personal Assistant Dashboard - Apple HIG Design & To-Do List",
+    "description": "ARIES - Adaptive Reasoning & Intelligence Engine System",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

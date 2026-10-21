@@ -71,7 +71,7 @@ class AppleDrawer extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Personal Assistant  Life OS',
+                          'ARIES  Life OS',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppleColors.textSecondary(isDark),
@@ -315,7 +315,7 @@ class AppleDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Personal Assistant Life OS v2.0',
+                    'ARIES Life OS v2.0',
                     style: TextStyle(
                       fontSize: 11,
                       color: AppleColors.textTertiary(isDark),
