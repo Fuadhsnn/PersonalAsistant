@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
+import '../widgets/apple_burger_icon.dart';
 
 class NotesScreen extends StatefulWidget {
   final DashboardState state;
@@ -87,10 +88,11 @@ class _NotesScreenState extends State<NotesScreen> {
                               ),
                             ],
                           ),
-                          child: Icon(
-                            CupertinoIcons.bars,
-                            size: 20,
-                            color: AppleColors.textPrimary(isDark),
+                          child: Center(
+                            child: AppleBurgerIcon(
+                              color: AppleColors.textPrimary(isDark),
+                              size: 18,
+                            ),
                           ),
                         ),
                       ),

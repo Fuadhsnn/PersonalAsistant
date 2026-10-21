@@ -4,6 +4,7 @@ import '../models/task_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../widgets/activity_rings_card.dart';
+import '../widgets/apple_burger_icon.dart';
 
 class HomeScreen extends StatelessWidget {
   final DashboardState state;
@@ -70,10 +71,11 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        CupertinoIcons.bars,
-                        size: 20,
-                        color: AppleColors.textPrimary(isDark),
+                      child: Center(
+                        child: AppleBurgerIcon(
+                          color: AppleColors.textPrimary(isDark),
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -194,7 +196,7 @@ class HomeScreen extends StatelessWidget {
                   // Feature 2: Catatan Cepat
                   Expanded(
                     child: _FeatureCard(
-                      icon: CupertinoIcons.pencil_ellipsis_rectangle,
+                      icon: CupertinoIcons.doc_text_fill,
                       iconColor: AppleColors.systemYellow,
                       title: 'Catatan Cepat',
                       subtitle: 'Memo instan',

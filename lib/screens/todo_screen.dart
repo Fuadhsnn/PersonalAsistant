@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import '../models/task_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
+import '../widgets/apple_burger_icon.dart';
 import '../widgets/category_pills.dart';
 import '../widgets/empty_tasks_view.dart';
 import '../widgets/reminder_summary_grid.dart';
@@ -57,10 +58,11 @@ class TodoScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: Icon(
-                            CupertinoIcons.bars,
-                            size: 20,
-                            color: AppleColors.textPrimary(isDark),
+                          child: Center(
+                            child: AppleBurgerIcon(
+                              color: AppleColors.textPrimary(isDark),
+                              size: 18,
+                            ),
                           ),
                         ),
                       ),

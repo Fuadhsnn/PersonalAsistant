@@ -131,7 +131,7 @@ class AppleDrawer extends StatelessWidget {
 
             // Item 3: Catatan Cepat (Notes)
             _DrawerItem(
-              icon: CupertinoIcons.pencil_ellipsis_rectangle,
+              icon: CupertinoIcons.doc_text_fill,
               iconColor: AppleColors.systemYellow,
               label: 'Catatan Cepat',
               isSelected: currentFeature == AppFeature.notes,
