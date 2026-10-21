@@ -194,6 +194,7 @@ class QuickLinksScreen extends StatelessWidget {
     }
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _launch(context, item.url),
       onLongPress: () {
         showCupertinoModalPopup(

@@ -1664,6 +1664,7 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
                   children: _colors.map((c) {
                     final isSel = _selectedColor == c;
                     return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => setState(() => _selectedColor = c),
                       child: Container(
                         margin: const EdgeInsets.only(right: 12),

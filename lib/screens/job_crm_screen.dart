@@ -357,6 +357,7 @@ class JobCrmScreen extends StatelessWidget {
   Widget _buildFilterChip(String label, bool isDark) {
     final isSelected = state.selectedJobStatusFilter == label;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => state.setJobStatusFilter(label),
       child: Container(
         margin: const EdgeInsets.only(right: 8),
@@ -437,6 +438,7 @@ class JobCrmScreen extends StatelessWidget {
                 ),
               ),
               GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => _showChangeStatusSheet(context, job),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

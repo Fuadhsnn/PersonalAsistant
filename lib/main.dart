@@ -176,7 +176,10 @@ class _MainAppShellState extends State<MainAppShell> {
                 ? const Center(child: CupertinoActivityIndicator())
                 : AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
-                    child: _buildActiveFeatureView(),
+                    child: KeyedSubtree(
+                      key: ValueKey(widget.state.currentFeature),
+                      child: _buildActiveFeatureView(),
+                    ),
                   ),
           ),
         ),

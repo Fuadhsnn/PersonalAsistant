@@ -407,6 +407,7 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
                   itemBuilder: (context, index) {
                     final item = presets[index];
                     return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () => _quickAddPreset(item),
                       child: Container(
                         width: 175,
@@ -638,6 +639,7 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
   Widget _buildPresetPill(String category, bool isDark) {
     final isSelected = _presetCategory == category;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _presetCategory = category),
       child: Container(
         margin: const EdgeInsets.only(right: 8),
@@ -677,21 +679,25 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
       child: Row(
         children: [
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => widget.state.toggleHabitToday(habit.id),
             child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: isDone ? Color(habit.colorValue) : CupertinoColors.transparent,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDone ? Color(habit.colorValue) : AppleColors.secondaryLabel(isDark),
-                  width: 2,
+              padding: const EdgeInsets.all(6),
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: isDone ? Color(habit.colorValue) : CupertinoColors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDone ? Color(habit.colorValue) : AppleColors.secondaryLabel(isDark),
+                    width: 2,
+                  ),
                 ),
+                child: isDone
+                    ? const Icon(CupertinoIcons.checkmark, size: 16, color: CupertinoColors.white)
+                    : null,
               ),
-              child: isDone
-                  ? const Icon(CupertinoIcons.checkmark, size: 16, color: CupertinoColors.white)
-                  : null,
             ),
           ),
           const SizedBox(width: 12),
