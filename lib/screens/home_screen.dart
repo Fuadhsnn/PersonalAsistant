@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/task_item.dart';
@@ -91,10 +92,12 @@ class HomeScreen extends StatelessWidget {
 
                   Row(
                     children: [
-                      const Text(
-                        ' ',
-                        style: TextStyle(fontSize: 16),
+                      Icon(
+                        Icons.apple,
+                        size: 18,
+                        color: AppleColors.textPrimary(isDark),
                       ),
+                      const SizedBox(width: 4),
                       Text(
                         'PERSONAL ASSISTANT',
                         style: TextStyle(
@@ -178,7 +181,7 @@ class HomeScreen extends StatelessWidget {
                       mainVal: '${state.activeInterviewsCount}',
                       unit: 'Proses Aktif',
                       desc: state.offeringCount > 0 ? '${state.offeringCount} Offering 🏆' : '${state.totalJobsCount} Terkirim',
-                      icon: CupertinoIcons.briefcase_fill,
+                      icon: Icons.work_rounded,
                       accentColor: AppleColors.systemBlue,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.jobCrm),
@@ -191,7 +194,7 @@ class HomeScreen extends StatelessWidget {
                       mainVal: state.weeklyKm.toStringAsFixed(1),
                       unit: 'KM',
                       desc: '${state.activeShoes.length} Sepatu Rotasi',
-                      icon: CupertinoIcons.flame_fill,
+                      icon: Icons.directions_run_rounded,
                       accentColor: const Color(0xFFFF2D55),
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.running),
@@ -208,7 +211,7 @@ class HomeScreen extends StatelessWidget {
                       mainVal: state.estimatedRunwayMonths.toStringAsFixed(1),
                       unit: 'Bulan Aman',
                       desc: 'Kas cadangan stabil',
-                      icon: CupertinoIcons.money_dollar_circle_fill,
+                      icon: Icons.account_balance_wallet_rounded,
                       accentColor: AppleColors.systemGreen,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.finance),
@@ -221,7 +224,7 @@ class HomeScreen extends StatelessWidget {
                       mainVal: '${state.todayCalorieTotal}',
                       unit: 'kcal',
                       desc: '${state.remainingCalories} kcal sisa target',
-                      icon: CupertinoIcons.heart_fill,
+                      icon: Icons.restaurant_rounded,
                       accentColor: AppleColors.systemOrange,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.calories),
@@ -301,7 +304,7 @@ class HomeScreen extends StatelessWidget {
                     child: _LaunchpadTile(
                       title: 'Job Hunt CRM',
                       subtitle: '${state.activeInterviewsCount} interview aktif',
-                      icon: CupertinoIcons.briefcase_fill,
+                      icon: Icons.work_rounded,
                       iconBg: AppleColors.systemBlue,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.jobCrm),
@@ -312,7 +315,7 @@ class HomeScreen extends StatelessWidget {
                     child: _LaunchpadTile(
                       title: 'Running & Sepatu',
                       subtitle: 'Odometer & rekor PB',
-                      icon: CupertinoIcons.flame_fill,
+                      icon: Icons.directions_run_rounded,
                       iconBg: const Color(0xFFFF2D55),
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.running),
@@ -327,7 +330,7 @@ class HomeScreen extends StatelessWidget {
                     child: _LaunchpadTile(
                       title: 'Kalori & Habit',
                       subtitle: 'Preset makanan nusantara',
-                      icon: CupertinoIcons.heart_fill,
+                      icon: Icons.restaurant_rounded,
                       iconBg: AppleColors.systemOrange,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.calories),
@@ -338,7 +341,7 @@ class HomeScreen extends StatelessWidget {
                     child: _LaunchpadTile(
                       title: 'Keuangan & Runway',
                       subtitle: 'Apple card & wishlist',
-                      icon: CupertinoIcons.money_dollar_circle_fill,
+                      icon: Icons.account_balance_wallet_rounded,
                       iconBg: AppleColors.systemGreen,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.finance),
@@ -353,7 +356,7 @@ class HomeScreen extends StatelessWidget {
                     child: _LaunchpadTile(
                       title: 'To-Do List',
                       subtitle: '${state.allCount} tugas pending',
-                      icon: CupertinoIcons.check_mark_circled_solid,
+                      icon: Icons.check_circle_rounded,
                       iconBg: AppleColors.systemIndigo,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.todo),
@@ -556,23 +559,25 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildHomeShortcutPill(ShortcutItem item, bool isDark) {
-    IconData iconData = CupertinoIcons.globe;
+    IconData iconData = Icons.language_rounded;
     switch (item.iconCode) {
       case 'briefcase':
-        iconData = CupertinoIcons.briefcase_fill;
+        iconData = Icons.work_rounded;
         break;
       case 'code':
-        iconData = CupertinoIcons.chevron_left_slash_chevron_right;
+        iconData = Icons.code_rounded;
         break;
       case 'run':
-        iconData = CupertinoIcons.flame_fill;
+        iconData = Icons.directions_run_rounded;
         break;
       case 'ai':
-        iconData = CupertinoIcons.sparkles;
+        iconData = Icons.auto_awesome_rounded;
         break;
       case 'video':
-        iconData = CupertinoIcons.play_rectangle_fill;
+        iconData = Icons.play_arrow_rounded;
         break;
+      default:
+        iconData = Icons.language_rounded;
     }
 
     return GestureDetector(

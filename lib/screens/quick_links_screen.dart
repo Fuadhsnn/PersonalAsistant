@@ -172,25 +172,25 @@ class QuickLinksScreen extends StatelessWidget {
   }
 
   Widget _buildShortcutAppIcon(BuildContext context, ShortcutItem item, bool isDark) {
-    IconData iconData = CupertinoIcons.globe;
+    IconData iconData = Icons.language_rounded;
     switch (item.iconCode) {
       case 'briefcase':
-        iconData = CupertinoIcons.briefcase_fill;
+        iconData = Icons.work_rounded;
         break;
       case 'code':
-        iconData = CupertinoIcons.chevron_left_slash_chevron_right;
+        iconData = Icons.code_rounded;
         break;
       case 'run':
-        iconData = CupertinoIcons.flame_fill;
+        iconData = Icons.directions_run_rounded;
         break;
       case 'ai':
-        iconData = CupertinoIcons.sparkles;
+        iconData = Icons.auto_awesome_rounded;
         break;
       case 'video':
-        iconData = CupertinoIcons.play_rectangle_fill;
+        iconData = Icons.play_arrow_rounded;
         break;
       default:
-        iconData = CupertinoIcons.globe;
+        iconData = Icons.language_rounded;
     }
 
     return GestureDetector(

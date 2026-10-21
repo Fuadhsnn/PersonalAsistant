@@ -234,9 +234,9 @@ class RunningScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      CupertinoIcons.flame_fill,
+                      Icons.local_fire_department_rounded,
                       color: Color(0xFFFF2D55),
-                      size: 26,
+                      size: 28,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -662,7 +662,7 @@ class RunningScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              CupertinoIcons.speedometer,
+              Icons.speed_rounded,
               size: 22,
               color: Color(0xFFFF2D55),
             ),

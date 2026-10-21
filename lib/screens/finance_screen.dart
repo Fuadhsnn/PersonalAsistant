@@ -259,7 +259,7 @@ class FinanceScreen extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            const Icon(CupertinoIcons.shield_fill, size: 12, color: AppleColors.systemGreen),
+                            const Icon(Icons.shield_rounded, size: 14, color: AppleColors.systemGreen),
                             const SizedBox(width: 4),
                             Text(
                               'Runway: ${runway.toStringAsFixed(1)} Bulan',
@@ -570,7 +570,7 @@ class FinanceScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              t.isExpense ? CupertinoIcons.arrow_down_left : CupertinoIcons.arrow_up_right,
+              t.isExpense ? Icons.south_west_rounded : Icons.north_east_rounded,
               size: 16,
               color: t.isExpense ? AppleColors.systemRed : AppleColors.systemGreen,
             ),

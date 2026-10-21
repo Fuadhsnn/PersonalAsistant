@@ -112,7 +112,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 1. Beranda
                   _DrawerItem(
-                    icon: CupertinoIcons.home,
+                    icon: Icons.home_rounded,
                     iconColor: AppleColors.systemBlue,
                     label: 'Beranda (Home)',
                     isSelected: currentFeature == AppFeature.home,
@@ -125,7 +125,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 2. To-Do List
                   _DrawerItem(
-                    icon: CupertinoIcons.check_mark_circled_solid,
+                    icon: Icons.check_circle_rounded,
                     iconColor: AppleColors.systemIndigo,
                     label: 'To-Do List & Pengingat',
                     badgeText: pendingCount > 0 ? '$pendingCount' : null,
@@ -140,7 +140,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 3. Job Hunt CRM
                   _DrawerItem(
-                    icon: CupertinoIcons.briefcase_fill,
+                    icon: Icons.work_rounded,
                     iconColor: AppleColors.systemBlue,
                     label: 'Job Hunt CRM',
                     badgeText: activeJobs > 0 ? '$activeJobs Aktif' : null,
@@ -155,7 +155,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 4. Running & Shoes
                   _DrawerItem(
-                    icon: CupertinoIcons.flame_fill,
+                    icon: Icons.directions_run_rounded,
                     iconColor: const Color(0xFFFF2D55),
                     label: 'Running & Sepatu',
                     badgeText: weeklyKm > 0 ? '${weeklyKm.toStringAsFixed(1)} KM' : null,
@@ -170,7 +170,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 5. Calories & Habits
                   _DrawerItem(
-                    icon: CupertinoIcons.heart_fill,
+                    icon: Icons.restaurant_rounded,
                     iconColor: AppleColors.systemOrange,
                     label: 'Kalori & Kebiasaan',
                     badgeText: '${state.habitsCompletedTodayCount}/${state.habits.length}',
@@ -185,7 +185,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 6. Finance & Runway
                   _DrawerItem(
-                    icon: CupertinoIcons.money_dollar_circle_fill,
+                    icon: Icons.account_balance_wallet_rounded,
                     iconColor: AppleColors.systemGreen,
                     label: 'Keuangan & Runway',
                     badgeText: '${state.estimatedRunwayMonths.toStringAsFixed(1)} Bln',
@@ -200,7 +200,7 @@ class AppleDrawer extends StatelessWidget {
 
                   // 7. Quick Links
                   _DrawerItem(
-                    icon: CupertinoIcons.compass_fill,
+                    icon: Icons.explore_rounded,
                     iconColor: AppleColors.systemTeal,
                     label: 'Pintasan Safari',
                     isSelected: currentFeature == AppFeature.quickLinks,

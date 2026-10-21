@@ -261,9 +261,9 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  CupertinoIcons.flame_fill,
+                                  Icons.local_fire_department_rounded,
                                   color: AppleColors.systemOrange,
-                                  size: 20,
+                                  size: 22,
                                 ),
                               ),
                               const SizedBox(width: 10),

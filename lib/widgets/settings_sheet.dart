@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
@@ -175,7 +176,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     child: Row(
                       children: [
-                        const Icon(CupertinoIcons.person_crop_circle,
+                        const Icon(Icons.account_circle_rounded,
                             color: AppleColors.systemBlue, size: 22),
                         const SizedBox(width: 12),
                         Text('Nama Panggilan',
@@ -237,7 +238,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     onPressed: _handleExport,
                     child: Row(
                       children: [
-                        const Icon(CupertinoIcons.share_up,
+                        const Icon(Icons.file_upload_outlined,
                             color: AppleColors.systemBlue, size: 22),
                         const SizedBox(width: 12),
                         Text('Ekspor Cadangan (JSON)',
@@ -255,7 +256,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     onPressed: _showImportDialog,
                     child: Row(
                       children: [
-                        const Icon(CupertinoIcons.arrow_down_doc,
+                        const Icon(Icons.file_download_outlined,
                             color: AppleColors.systemOrange, size: 22),
                         const SizedBox(width: 12),
                         Text('Pulihkan Cadangan (Impor JSON)',

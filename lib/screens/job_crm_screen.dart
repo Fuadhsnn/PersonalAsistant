@@ -196,7 +196,7 @@ class JobCrmScreen extends StatelessWidget {
                     isDark,
                     title: 'Total Dilamar',
                     count: '${state.totalJobsCount}',
-                    icon: CupertinoIcons.briefcase_fill,
+                    icon: Icons.work_rounded,
                     accentColor: AppleColors.systemBlue,
                   ),
                 ),
@@ -206,7 +206,7 @@ class JobCrmScreen extends StatelessWidget {
                     isDark,
                     title: 'Proses Aktif',
                     count: '${state.activeInterviewsCount}',
-                    icon: CupertinoIcons.arrow_2_circlepath,
+                    icon: Icons.sync_rounded,
                     accentColor: AppleColors.systemOrange,
                   ),
                 ),
@@ -216,7 +216,7 @@ class JobCrmScreen extends StatelessWidget {
                     isDark,
                     title: 'Offering 🏆',
                     count: '${state.offeringCount}',
-                    icon: CupertinoIcons.checkmark_seal_fill,
+                    icon: Icons.verified_rounded,
                     accentColor: AppleColors.systemGreen,
                   ),
                 ),
@@ -485,11 +485,11 @@ class JobCrmScreen extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildTag(job.workSystem, CupertinoIcons.building_2_fill, isDark),
+              _buildTag(job.workSystem, Icons.location_city_rounded, isDark),
               if (job.salaryExpectation.isNotEmpty)
-                _buildTag(job.salaryExpectation, CupertinoIcons.money_dollar_circle_fill, isDark),
+                _buildTag(job.salaryExpectation, Icons.payments_rounded, isDark),
               if (job.cvVersion.isNotEmpty)
-                _buildTag(job.cvVersion, CupertinoIcons.doc_text_fill, isDark),
+                _buildTag(job.cvVersion, Icons.description_rounded, isDark),
             ],
           ),
 
@@ -506,8 +506,8 @@ class JobCrmScreen extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(
-                    CupertinoIcons.bell_fill,
-                    size: 13,
+                    Icons.notifications_active_rounded,
+                    size: 14,
                     color: AppleColors.systemOrange,
                   ),
                   const SizedBox(width: 6),

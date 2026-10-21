@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 
@@ -31,7 +32,7 @@ class ReminderSummaryGrid extends StatelessWidget {
           child: Column(
             children: [
               _RemindersCard(
-                icon: CupertinoIcons.calendar_today,
+                icon: Icons.today_rounded,
                 iconColor: AppleColors.systemBlue,
                 count: todayCount,
                 label: 'Hari Ini',
@@ -41,7 +42,7 @@ class ReminderSummaryGrid extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _RemindersCard(
-                icon: CupertinoIcons.tray_fill,
+                icon: Icons.inbox_rounded,
                 iconColor: AppleColors.systemIndigo,
                 count: allCount,
                 label: 'Semua',
@@ -58,7 +59,7 @@ class ReminderSummaryGrid extends StatelessWidget {
           child: Column(
             children: [
               _RemindersCard(
-                icon: CupertinoIcons.clock_fill,
+                icon: Icons.schedule_rounded,
                 iconColor: AppleColors.systemOrange,
                 count: scheduledCount,
                 label: 'Terjadwal',
@@ -68,7 +69,7 @@ class ReminderSummaryGrid extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _RemindersCard(
-                icon: CupertinoIcons.checkmark_circle_fill,
+                icon: Icons.check_circle_rounded,
                 iconColor: AppleColors.systemGreen,
                 count: completedCount,
                 label: 'Selesai',
