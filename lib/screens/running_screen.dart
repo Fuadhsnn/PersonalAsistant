@@ -74,6 +74,74 @@ class RunningScreen extends StatelessWidget {
     );
   }
 
+  void _openConnectStravaSheet(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _ConnectStravaModalSheet(state: state),
+    );
+  }
+
+  void _confirmDisconnectStrava(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Putuskan Tautan Strava?'),
+        content: const Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: Text(
+            'Aktivitas lari yang telah tersimpan tidak akan terhapus, namun sinkronisasi otomatis akan dimatikan.',
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              state.disconnectStrava();
+              Navigator.pop(ctx);
+            },
+            child: const Text('Putuskan'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSyncResult(BuildContext context, int count) {
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.sync_rounded, size: 20, color: Color(0xFFFC4C02)),
+            SizedBox(width: 6),
+            Text('Sinkronisasi Strava'),
+          ],
+        ),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            count > 0
+                ? 'Berhasil menarik $count aktivitas lari baru dari Strava!'
+                : 'Semua aktivitas Strava sudah tersinkronkan. Tidak ada lari baru yang ditemukan.',
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = state.isDarkMode;
@@ -301,6 +369,14 @@ class RunningScreen extends StatelessWidget {
           ),
         ),
 
+        // Strava Integration Card
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: _buildStravaCard(context, state, isDark),
+          ),
+        ),
+
         // Section: Personal Best (PB)
         SliverToBoxAdapter(
           child: Padding(
@@ -492,6 +568,264 @@ class RunningScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildStravaCard(BuildContext context, DashboardState state, bool isDark) {
+    if (!state.isStravaConnected) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFC4C02), Color(0xFFD63E00)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFC4C02).withOpacity(0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.directions_run_rounded, size: 14, color: CupertinoColors.white),
+                      SizedBox(width: 4),
+                      Text(
+                        'STRAVA SYNC',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: CupertinoColors.white,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                const Text(
+                  '⚡ Auto Sync',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: CupertinoColors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Tautkan Akun Strava',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: CupertinoColors.white,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Tarik otomatis catatan lari, jarak mingguan, pace, serta hitung odometer sepatu tanpa repot input manual.',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: CupertinoColors.white.withOpacity(0.9),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                CupertinoButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                  color: CupertinoColors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  onPressed: () => _openConnectStravaSheet(context),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.link_rounded, size: 16, color: Color(0xFFFC4C02)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Hubungkan Strava',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFC4C02),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    final lastSync = state.stravaLastSync;
+    final lastSyncText = lastSync != null
+        ? DateFormat('d MMM, HH:mm').format(lastSync)
+        : 'Belum pernah';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppleColors.cardBg(isDark),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFFC4C02).withOpacity(0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFC4C02).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFFFC4C02)),
+                    SizedBox(width: 4),
+                    Text(
+                      'STRAVA TERHUBUNG',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFFC4C02),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minSize: 22,
+                onPressed: () => _confirmDisconnectStrava(context),
+                child: Text(
+                  'Putuskan Tautan',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppleColors.secondaryLabel(isDark),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFC4C02),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.directions_run_rounded,
+                  color: CupertinoColors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.stravaAthleteName.isNotEmpty
+                          ? state.stravaAthleteName
+                          : 'Strava Runner',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppleColors.label(isDark),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Sync terakhir: $lastSyncText',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppleColors.secondaryLabel(isDark),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              CupertinoButton(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                color: const Color(0xFFFC4C02),
+                borderRadius: BorderRadius.circular(14),
+                onPressed: state.isSyncingStrava
+                    ? null
+                    : () async {
+                        final count = await state.syncStravaActivities();
+                        if (context.mounted) {
+                          _showSyncResult(context, count);
+                        }
+                      },
+                child: state.isSyncingStrava
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CupertinoActivityIndicator(color: CupertinoColors.white),
+                      )
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.sync_rounded, size: 16, color: CupertinoColors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            'Sinkronkan',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: CupertinoColors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildShoeCard(BuildContext context, ShoeItem shoe, bool isDark) {
     final wearPct = shoe.wearPercentage;
     final pctText = (wearPct * 100).toStringAsFixed(0);
@@ -643,6 +977,7 @@ class RunningScreen extends StatelessWidget {
 
   Widget _buildRunLogCard(BuildContext context, RunLog run, bool isDark) {
     final dateFormat = DateFormat('EEE, d MMM yyyy • HH:mm');
+    final isStravaRun = run.id.startsWith('strava_');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -650,7 +985,11 @@ class RunningScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppleColors.cardBg(isDark),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppleColors.separator(isDark)),
+        border: Border.all(
+          color: isStravaRun
+              ? const Color(0xFFFC4C02).withOpacity(0.3)
+              : AppleColors.separator(isDark),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -658,13 +997,15 @@ class RunningScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF2D55).withOpacity(0.12),
+              color: isStravaRun
+                  ? const Color(0xFFFC4C02).withOpacity(0.14)
+                  : const Color(0xFFFF2D55).withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.speed_rounded,
+            child: Icon(
+              isStravaRun ? Icons.directions_run_rounded : Icons.speed_rounded,
               size: 22,
-              color: Color(0xFFFF2D55),
+              color: isStravaRun ? const Color(0xFFFC4C02) : const Color(0xFFFF2D55),
             ),
           ),
           const SizedBox(width: 12),
@@ -698,6 +1039,32 @@ class RunningScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (isStravaRun) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFC4C02).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.directions_run_rounded, size: 10, color: Color(0xFFFC4C02)),
+                            SizedBox(width: 2),
+                            Text(
+                              'STRAVA',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFFC4C02),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 3),
@@ -1160,6 +1527,366 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
       color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: AppleColors.separator(isDark)),
+    );
+  }
+}
+
+class _ConnectStravaModalSheet extends StatefulWidget {
+  final DashboardState state;
+
+  const _ConnectStravaModalSheet({required this.state});
+
+  @override
+  State<_ConnectStravaModalSheet> createState() => _ConnectStravaModalSheetState();
+}
+
+class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
+  final _tokenController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleConnect() async {
+    final token = _tokenController.text.trim();
+    if (token.isEmpty) {
+      setState(() => _errorMessage = 'Silakan masukkan Personal Access Token Strava Anda.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final success = await widget.state.connectStrava(token);
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.pop(context);
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memverifikasi token Strava. Pastikan token aktif dan memiliki izin membaca aktivitas.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.state.isDarkMode;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: BoxDecoration(
+        color: AppleColors.cardBg(isDark),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          // Header Bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Batal', style: TextStyle(color: AppleColors.secondaryLabel(isDark))),
+                ),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.directions_run_rounded, size: 18, color: Color(0xFFFC4C02)),
+                    SizedBox(width: 6),
+                    Text(
+                      'Tautkan Strava',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _isLoading ? null : _handleConnect,
+                  child: _isLoading
+                      ? const CupertinoActivityIndicator()
+                      : const Text(
+                          'Simpan',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFFC4C02),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                // Strava Brand Banner
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFC4C02).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFC4C02).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFC4C02),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.speed_rounded,
+                          color: CupertinoColors.white,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Strava API v3 Integration',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFFC4C02),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Tarik otomatis jarak lari, pace, moving time, dan waktu latihan dari akun Strava Anda.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                height: 1.3,
+                                color: AppleColors.secondaryLabel(isDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Tutorial Steps
+                Text(
+                  'CARA MENDAPATKAN TOKEN:',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppleColors.secondaryLabel(isDark),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                _buildStepItem(
+                  number: '1',
+                  title: 'Buka Pengaturan API Strava',
+                  desc: 'Buka browser dan login ke strava.com/settings/api',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildStepItem(
+                  number: '2',
+                  title: 'Salin "Your API Access Token"',
+                  desc: 'Di halaman API Application Strava, salin teks pada bagian "Your API Access Token".',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildStepItem(
+                  number: '3',
+                  title: 'Tempelkan Token di Bawah Ini',
+                  desc: 'Paste token ke kolom teks di bawah lalu tekan tombol Verifikasi & Hubungkan.',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 20),
+
+                Text(
+                  'PERSONAL ACCESS TOKEN',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppleColors.secondaryLabel(isDark),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _errorMessage != null
+                          ? AppleColors.systemRed
+                          : AppleColors.separator(isDark),
+                    ),
+                  ),
+                  child: CupertinoTextField(
+                    controller: _tokenController,
+                    placeholder: 'Tempelkan token Strava Anda di sini (misal: 8f9b2c...)',
+                    placeholderStyle: TextStyle(
+                      fontSize: 13,
+                      color: AppleColors.tertiaryLabel(isDark),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppleColors.label(isDark),
+                    ),
+                    decoration: const BoxDecoration(),
+                    clearButtonMode: OverlayVisibilityMode.editing,
+                    maxLines: 1,
+                  ),
+                ),
+
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(CupertinoIcons.exclamationmark_circle_fill, size: 14, color: AppleColors.systemRed),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppleColors.systemRed,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+
+                CupertinoButton(
+                  color: const Color(0xFFFC4C02),
+                  borderRadius: BorderRadius.circular(16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  onPressed: _isLoading ? null : _handleConnect,
+                  child: _isLoading
+                      ? const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CupertinoActivityIndicator(color: CupertinoColors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Menghubungkan & Menarik Lari...',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.bolt_rounded, color: CupertinoColors.white, size: 20),
+                            SizedBox(width: 6),
+                            Text(
+                              'Verifikasi & Hubungkan',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: CupertinoColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepItem({
+    required String number,
+    required String title,
+    required String desc,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppleColors.cardBg(isDark),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppleColors.separator(isDark)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFC4C02).withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              number,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFFFC4C02),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppleColors.label(isDark),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.3,
+                    color: AppleColors.secondaryLabel(isDark),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

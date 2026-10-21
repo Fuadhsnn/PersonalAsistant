@@ -6,6 +6,7 @@ import '../models/running_shoe_item.dart';
 import '../models/finance_item.dart';
 import '../models/shortcut_item.dart';
 import '../services/storage_service.dart';
+import '../services/strava_service.dart';
 
 enum AppFeature {
   home,
@@ -92,6 +93,13 @@ class DashboardState extends ChangeNotifier {
   // Shortcuts State
   List<ShortcutItem> _shortcuts = [];
 
+  // Strava State
+  final StravaService _stravaService = StravaService();
+  bool _isStravaConnected = false;
+  String _stravaAthleteName = '';
+  bool _isSyncingStrava = false;
+  DateTime? _stravaLastSync;
+
   // Global Settings State
   String _userName = 'Hasan';
   String _quickNote = '';
@@ -108,6 +116,12 @@ class DashboardState extends ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   String get userName => _userName;
   String get quickNote => _quickNote;
+
+  // Strava Getters
+  bool get isStravaConnected => _isStravaConnected;
+  String get stravaAthleteName => _stravaAthleteName;
+  bool get isSyncingStrava => _isSyncingStrava;
+  DateTime? get stravaLastSync => _stravaLastSync;
 
   // Tasks
   List<TaskItem> get tasks => _tasks;
@@ -152,6 +166,14 @@ class DashboardState extends ChangeNotifier {
     _wishlists = await _storageService.loadWishlists();
     _shortcuts = await _storageService.loadShortcuts();
     _calorieGoal = await _storageService.loadCalorieGoal();
+
+    // Check Strava Connection
+    final stravaToken = await _stravaService.getSavedToken();
+    if (stravaToken != null) {
+      _isStravaConnected = true;
+      _stravaAthleteName = (await _stravaService.getSavedAthleteName()) ?? 'Strava Athlete';
+      _stravaLastSync = await _stravaService.getLastSyncTime();
+    }
 
     _userName = await _storageService.loadUserName();
     _quickNote = await _storageService.loadQuickNote();
@@ -545,6 +567,106 @@ class DashboardState extends ChangeNotifier {
     _runLogs.removeWhere((r) => r.id == runId);
     notifyListeners();
     await _storageService.saveRunLogs(_runLogs);
+  }
+
+  // --- Strava Integration Actions ---
+  Future<bool> connectStrava(String token) async {
+    final cleanToken = token.trim();
+    if (cleanToken.isEmpty) return false;
+
+    _isSyncingStrava = true;
+    notifyListeners();
+
+    try {
+      final profile = await _stravaService.fetchAthleteProfile(cleanToken);
+      if (profile != null) {
+        await _stravaService.saveToken(cleanToken);
+        _isStravaConnected = true;
+        final firstname = profile['firstname'] ?? '';
+        final lastname = profile['lastname'] ?? '';
+        final fullName = '$firstname $lastname'.trim();
+        _stravaAthleteName = fullName.isNotEmpty ? fullName : 'Strava Athlete';
+        _isSyncingStrava = false;
+        notifyListeners();
+
+        // Automatically sync recent runs upon connecting
+        await syncStravaActivities();
+        return true;
+      }
+    } catch (_) {}
+
+    _isSyncingStrava = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<void> disconnectStrava() async {
+    await _stravaService.disconnect();
+    _isStravaConnected = false;
+    _stravaAthleteName = '';
+    _stravaLastSync = null;
+    notifyListeners();
+  }
+
+  Future<int> syncStravaActivities() async {
+    if (_isSyncingStrava) return 0;
+
+    final token = await _stravaService.getSavedToken();
+    if (token == null) return 0;
+
+    _isSyncingStrava = true;
+    notifyListeners();
+
+    int newRunsCount = 0;
+    try {
+      // Find a default active shoe if available
+      final defaultShoe = _shoes.firstWhere(
+        (s) => !s.isRetired,
+        orElse: () => _shoes.isNotEmpty
+            ? _shoes.first
+            : ShoeItem(
+                id: '',
+                name: 'Strava Gear',
+                brand: 'Strava',
+                currentKm: 0,
+                targetMaxKm: 600,
+                colorValue: 0xFFFC4C02,
+              ),
+      );
+
+      final stravaRuns = await _stravaService.fetchRecentRuns(
+        token,
+        defaultShoeId: defaultShoe.id,
+        defaultShoeName: defaultShoe.name,
+      );
+
+      for (final run in stravaRuns) {
+        final alreadyExists = _runLogs.any((r) => r.id == run.id);
+        if (!alreadyExists) {
+          _runLogs.insert(0, run);
+          if (run.shoeId.isNotEmpty) {
+            final sIndex = _shoes.indexWhere((s) => s.id == run.shoeId);
+            if (sIndex != -1) {
+              _shoes[sIndex] = _shoes[sIndex].addKm(run.distanceKm);
+            }
+          }
+          newRunsCount++;
+        }
+      }
+
+      if (newRunsCount > 0) {
+        _runLogs.sort((a, b) => b.date.compareTo(a.date));
+        await _storageService.saveRunLogs(_runLogs);
+        await _storageService.saveShoes(_shoes);
+      }
+
+      _stravaLastSync = DateTime.now();
+      await _stravaService.saveLastSyncTime(_stravaLastSync!);
+    } catch (_) {}
+
+    _isSyncingStrava = false;
+    notifyListeners();
+    return newRunsCount;
   }
 
   // ==========================================
