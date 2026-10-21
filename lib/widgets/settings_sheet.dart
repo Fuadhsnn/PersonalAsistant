@@ -80,31 +80,73 @@ class _SettingsSheetState extends State<SettingsSheet> {
     );
   }
 
+  void _confirmClearAllData() {
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Kosongkan Semua Data?'),
+        content: const Padding(
+          padding: EdgeInsets.only(top: 8.0),
+          child: Text(
+            'Semua data tugas, lamaran, kalori, kebiasaan, sepatu, riwayat lari, keuangan, dan catatan akan dikosongkan bersih. Tindakan ini tidak dapat dibatalkan.',
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Batal'),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Kosongkan Semua'),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              await widget.state.clearAllData();
+              if (!mounted) return;
+              setState(() {
+                _statusMessage = 'Semua data dummy telah berhasil dikosongkan!';
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxHeight = screenHeight - viewInsets.bottom - 44;
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.textPrimary(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppleColors.card(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.textPrimary(isDark),
+            fontSize: 14,
           ),
-          padding: EdgeInsets.only(
-            top: 16,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
+          child: Container(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            decoration: BoxDecoration(
+              color: AppleColors.card(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 20,
+              right: 20,
+              bottom: 24,
+            ),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -295,6 +337,20 @@ class _SettingsSheetState extends State<SettingsSheet> {
                       ],
                     ),
                   ),
+                  Container(height: 1, color: AppleColors.separator(isDark)),
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    onPressed: _confirmClearAllData,
+                    child: const Row(
+                      children: [
+                        Icon(CupertinoIcons.trash,
+                            color: AppleColors.systemRed, size: 22),
+                        SizedBox(width: 12),
+                        Text('Kosongkan Semua Data (Hapus Dummy)',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppleColors.systemRed)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -351,6 +407,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
       ),
     ),
   ),
+),
 );
   }
 

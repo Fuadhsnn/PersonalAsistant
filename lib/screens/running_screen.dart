@@ -63,6 +63,14 @@ class RunningScreen extends StatelessWidget {
     );
   }
 
+  void _openEditPbSheet(BuildContext context, PersonalBest pb) {
+    showCupertinoModalPopup(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _EditPersonalBestModalSheet(state: state, personalBest: pb),
+    );
+  }
+
   void _openManualKmSheet(BuildContext context, ShoeItem shoe) {
     final controller = TextEditingController();
     showCupertinoDialog(
@@ -428,9 +436,16 @@ class RunningScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                const Text(
-                  '🏆 Rekor Terbaik',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFFF9500)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.pencil, size: 12, color: const Color(0xFFFF9500)),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Tap kartu untuk edit',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFFF9500)),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -445,58 +460,62 @@ class RunningScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               physics: const BouncingScrollPhysics(),
               children: state.personalBests.map((pb) {
-                return Container(
-                  width: 140,
-                  margin: const EdgeInsets.only(right: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppleColors.cardBg(isDark),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppleColors.separator(isDark)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            pb.distanceLabel,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFFFF9500),
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _openEditPbSheet(context, pb),
+                  child: Container(
+                    width: 140,
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppleColors.cardBg(isDark),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppleColors.separator(isDark)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              pb.distanceLabel,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFFF9500),
+                              ),
                             ),
+                            const Icon(CupertinoIcons.pencil, size: 12, color: Color(0xFFFF9500)),
+                          ],
+                        ),
+                        Text(
+                          pb.time,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            color: AppleColors.label(isDark),
                           ),
-                          const Icon(CupertinoIcons.sparkles, size: 12, color: Color(0xFFFF9500)),
-                        ],
-                      ),
-                      Text(
-                        pb.time,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                          color: AppleColors.label(isDark),
                         ),
-                      ),
-                      Text(
-                        'Pace ${pb.pace}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: AppleColors.secondaryLabel(isDark),
+                        Text(
+                          'Pace ${pb.pace}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: AppleColors.secondaryLabel(isDark),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
@@ -1349,58 +1368,66 @@ class _AddRunModalSheetState extends State<_AddRunModalSheet> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
     final shoes = widget.state.activeShoes;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Catat Latihan Lari',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text(
-                    'Simpan',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF2D55)),
-                  ),
-                ),
-              ],
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ),
-          const Divider(height: 1),
+            child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Batal'),
+                  ),
+                  Text(
+                    'Catat Latihan Lari',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppleColors.label(isDark),
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _save,
+                    child: const Text(
+                      'Simpan',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF2D55)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
 
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
+            Expanded(
+              child: ListView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(16),
+                physics: const BouncingScrollPhysics(),
               children: [
                 _buildFieldLabel('Jarak (KM) *', isDark),
                 CupertinoTextField(
@@ -1468,6 +1495,7 @@ class _AddRunModalSheetState extends State<_AddRunModalSheet> {
       ),
     ),
   ),
+),
 );
   }
 
@@ -1552,55 +1580,63 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
-                ),
-                Text(
-                  'Tambah Sepatu Lari',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _save,
-                  child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-              ],
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ),
-          const Divider(height: 1),
+            child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Batal'),
+                  ),
+                  Text(
+                    'Tambah Sepatu Lari',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppleColors.label(isDark),
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _save,
+                    child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
 
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
+            Expanded(
+              child: ListView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(16),
+                physics: const BouncingScrollPhysics(),
               children: [
                 _buildFieldLabel('Nama Sepatu *', isDark),
                 CupertinoTextField(
@@ -1695,6 +1731,7 @@ class _AddShoeModalSheetState extends State<_AddShoeModalSheet> {
       ),
     ),
   ),
+),
 );
   }
 
@@ -1771,66 +1808,74 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-        children: [
-          // Header Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Batal', style: TextStyle(color: AppleColors.secondaryLabel(isDark))),
-                ),
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.directions_run_rounded, size: 18, color: Color(0xFFFC4C02)),
-                    SizedBox(width: 6),
-                    Text(
-                      'Tautkan Strava',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _isLoading ? null : _handleConnect,
-                  child: _isLoading
-                      ? const CupertinoActivityIndicator()
-                      : const Text(
-                          'Simpan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFFC4C02),
-                          ),
-                        ),
-                ),
-              ],
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ),
-          const Divider(height: 1),
+            child: Column(
+          children: [
+            // Header Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Batal', style: TextStyle(color: AppleColors.secondaryLabel(isDark))),
+                  ),
+                  const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.directions_run_rounded, size: 18, color: Color(0xFFFC4C02)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Tautkan Strava',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _isLoading ? null : _handleConnect,
+                    child: _isLoading
+                        ? const CupertinoActivityIndicator()
+                        : const Text(
+                            'Simpan',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFFC4C02),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
 
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
+            Expanded(
+              child: ListView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(20),
               children: [
                 // Strava Brand Banner
                 Container(
@@ -2081,6 +2126,7 @@ class _ConnectStravaModalSheetState extends State<_ConnectStravaModalSheet> {
       ),
     ),
   ),
+),
 );
   }
 
@@ -2537,6 +2583,197 @@ class _HuaweiHealthModalSheet extends StatelessWidget {
           actionButton,
         ],
       ),
+    );
+  }
+}
+
+class _EditPersonalBestModalSheet extends StatefulWidget {
+  final DashboardState state;
+  final PersonalBest personalBest;
+
+  const _EditPersonalBestModalSheet({
+    required this.state,
+    required this.personalBest,
+  });
+
+  @override
+  State<_EditPersonalBestModalSheet> createState() => _EditPersonalBestModalSheetState();
+}
+
+class _EditPersonalBestModalSheetState extends State<_EditPersonalBestModalSheet> {
+  late final TextEditingController _timeController;
+  late final TextEditingController _paceController;
+  late final TextEditingController _dateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _timeController = TextEditingController(
+      text: widget.personalBest.time == '--:--' ? '' : widget.personalBest.time,
+    );
+    _paceController = TextEditingController(
+      text: widget.personalBest.pace == '-- /km'
+          ? ''
+          : widget.personalBest.pace.replaceAll(' /km', ''),
+    );
+    _dateController = TextEditingController(
+      text: widget.personalBest.dateStr == '-' ? '' : widget.personalBest.dateStr,
+    );
+  }
+
+  @override
+  void dispose() {
+    _timeController.dispose();
+    _paceController.dispose();
+    _dateController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final time = _timeController.text.trim();
+    String pace = _paceController.text.trim();
+    final date = _dateController.text.trim();
+
+    if (pace.isNotEmpty && !pace.contains('/km')) {
+      pace = '$pace /km';
+    }
+
+    final updated = PersonalBest(
+      distanceLabel: widget.personalBest.distanceLabel,
+      time: time.isEmpty ? '--:--' : time,
+      pace: pace.isEmpty ? '-- /km' : pace,
+      dateStr: date.isEmpty ? '-' : date,
+    );
+
+    widget.state.updatePersonalBest(updated);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
+
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            fontFamily: '.SF Pro Display',
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
+          ),
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal'),
+                      ),
+                      Text(
+                        'Edit PB: ${widget.personalBest.distanceLabel}',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                          color: AppleColors.label(isDark),
+                        ),
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _save,
+                        child: const Text(
+                          'Simpan',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFF9500)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                Expanded(
+                  child: ListView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.all(16),
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildFieldLabel('Waktu Tempuh (Contoh: 24:12 atau 1:58:30)', isDark),
+                      CupertinoTextField(
+                        controller: _timeController,
+                        placeholder: 'Contoh: 24:12',
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: _inputDecoration(isDark),
+                        style: TextStyle(color: AppleColors.label(isDark)),
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildFieldLabel('Pace Rata-Rata (Contoh: 4:50)', isDark),
+                      CupertinoTextField(
+                        controller: _paceController,
+                        placeholder: 'Contoh: 4:50',
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: _inputDecoration(isDark),
+                        style: TextStyle(color: AppleColors.label(isDark)),
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildFieldLabel('Tanggal / Event / Lokasi (Opsional)', isDark),
+                      CupertinoTextField(
+                        controller: _dateController,
+                        placeholder: 'Contoh: Jan 2026 (GBK) atau Maybank Marathon',
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: _inputDecoration(isDark),
+                        style: TextStyle(color: AppleColors.label(isDark)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldLabel(String label, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          decoration: TextDecoration.none,
+          color: AppleColors.secondaryLabel(isDark),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _inputDecoration(bool isDark) {
+    return BoxDecoration(
+      color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppleColors.separator(isDark)),
     );
   }
 }

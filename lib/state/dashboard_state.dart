@@ -88,7 +88,7 @@ class DashboardState extends ChangeNotifier {
   // Finance State
   List<FinanceTransaction> _finances = [];
   List<WishlistItem> _wishlists = [];
-  final double _initialCashReserve = 8500000; // Base cash reserve in IDR
+  double _walletStartingBalance = 0.0;
 
   // Shortcuts State
   List<ShortcutItem> _shortcuts = [];
@@ -146,6 +146,7 @@ class DashboardState extends ChangeNotifier {
   // Finance
   List<FinanceTransaction> get finances => _finances;
   List<WishlistItem> get wishlists => _wishlists;
+  double get walletStartingBalance => _walletStartingBalance;
 
   // Shortcuts
   List<ShortcutItem> get shortcuts => _shortcuts;
@@ -166,6 +167,7 @@ class DashboardState extends ChangeNotifier {
     _wishlists = await _storageService.loadWishlists();
     _shortcuts = await _storageService.loadShortcuts();
     _calorieGoal = await _storageService.loadCalorieGoal();
+    _walletStartingBalance = await _storageService.loadWalletStartingBalance();
 
     // Check Strava Connection
     final stravaToken = await _stravaService.getSavedToken();
@@ -569,6 +571,17 @@ class DashboardState extends ChangeNotifier {
     await _storageService.saveRunLogs(_runLogs);
   }
 
+  Future<void> updatePersonalBest(PersonalBest updated) async {
+    final index = _personalBests.indexWhere((p) => p.distanceLabel == updated.distanceLabel);
+    if (index != -1) {
+      _personalBests[index] = updated;
+    } else {
+      _personalBests.add(updated);
+    }
+    notifyListeners();
+    await _storageService.savePersonalBests(_personalBests);
+  }
+
   // --- Strava Integration Actions ---
   Future<bool> connectStrava(String token) async {
     final cleanToken = token.trim();
@@ -680,7 +693,7 @@ class DashboardState extends ChangeNotifier {
   }
 
   double get currentNetBalance {
-    double balance = _initialCashReserve;
+    double balance = _walletStartingBalance;
     for (final f in _finances) {
       if (f.isExpense) {
         balance -= f.amount;
@@ -689,6 +702,12 @@ class DashboardState extends ChangeNotifier {
       }
     }
     return balance;
+  }
+
+  Future<void> setWalletStartingBalance(double newBalance) async {
+    _walletStartingBalance = newBalance;
+    notifyListeners();
+    await _storageService.saveWalletStartingBalance(newBalance);
   }
 
   double get estimatedRunwayMonths {
@@ -768,5 +787,10 @@ class DashboardState extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  Future<void> clearAllData() async {
+    await _storageService.clearAllData();
+    await _init();
   }
 }

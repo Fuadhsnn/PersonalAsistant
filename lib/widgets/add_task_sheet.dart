@@ -105,28 +105,37 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   Widget build(BuildContext context) {
     final isEditing = widget.initialTask != null;
     final isDark = widget.isDark;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxHeight = screenHeight - viewInsets.bottom - 44;
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.textPrimary(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppleColors.card(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.textPrimary(isDark),
+            fontSize: 14,
           ),
-          padding: EdgeInsets.only(
-            top: 16,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
+          child: Container(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            decoration: BoxDecoration(
+              color: AppleColors.card(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 20,
+              right: 20,
+              bottom: 24,
+            ),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -388,6 +397,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       ),
     ),
   ),
+),
 );
   }
 }

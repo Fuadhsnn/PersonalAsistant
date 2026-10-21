@@ -18,6 +18,54 @@ class FinanceScreen extends StatelessWidget {
     required this.onBackToHome,
   });
 
+  void _openEditWalletBalanceDialog(BuildContext context) {
+    final controller = TextEditingController(
+      text: state.walletStartingBalance > 0
+          ? state.walletStartingBalance.toStringAsFixed(0)
+          : '',
+    );
+
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Atur Saldo Awal Wallet'),
+        content: Column(
+          children: [
+            const SizedBox(height: 10),
+            const Text(
+              'Masukkan saldo kas / tabungan awal Anda saat ini (Rupiah):',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            CupertinoTextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              placeholder: 'Contoh: 10000000',
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              final val = double.tryParse(controller.text.replaceAll('.', ''));
+              if (val != null && val >= 0) {
+                state.setWalletStartingBalance(val);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openAddTransactionSheet(BuildContext context) {
     showCupertinoModalPopup(
       context: context,
@@ -240,12 +288,40 @@ class FinanceScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Apple Cash',
+                            'Wallet',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
                               color: AppleColors.secondaryLabel(isDark),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            minSize: 22,
+                            onPressed: () => _openEditWalletBalanceDialog(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppleColors.systemBlue.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(CupertinoIcons.pencil, size: 11, color: AppleColors.systemBlue),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Ubah',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppleColors.systemBlue,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -275,29 +351,39 @@ class FinanceScreen extends StatelessWidget {
                     ],
                   ),
 
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'TOTAL KAS TERSEDIA',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                          color: AppleColors.secondaryLabel(isDark),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _openEditWalletBalanceDialog(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'TOTAL KAS TERSEDIA',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: AppleColors.secondaryLabel(isDark),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(CupertinoIcons.pencil_circle, size: 14, color: AppleColors.secondaryLabel(isDark)),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        currencyFormat.format(balance),
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.8,
-                          color: AppleColors.label(isDark),
+                        const SizedBox(height: 2),
+                        Text(
+                          currencyFormat.format(balance),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.8,
+                            color: AppleColors.label(isDark),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   Row(
@@ -672,26 +758,33 @@ class _AddTransactionModalSheetState extends State<_AddTransactionModalSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                child: Row(
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CupertinoButton(
@@ -720,6 +813,7 @@ class _AddTransactionModalSheetState extends State<_AddTransactionModalSheet> {
 
               Expanded(
                 child: ListView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.all(16),
                   physics: const BouncingScrollPhysics(),
                   children: [
@@ -823,8 +917,9 @@ class _AddTransactionModalSheetState extends State<_AddTransactionModalSheet> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildFieldLabel(String label, bool isDark) {
     return Padding(
@@ -892,56 +987,64 @@ class _AddWishlistModalSheetState extends State<_AddWishlistModalSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.82).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.65,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Batal'),
-                    ),
-                    Text(
-                      'Tambah Target Wishlist',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.none,
-                        color: AppleColors.label(isDark),
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal'),
                       ),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _save,
-                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+                      Text(
+                        'Tambah Target Wishlist',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                          color: AppleColors.label(isDark),
+                        ),
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _save,
+                        child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Divider(height: 1),
+                const Divider(height: 1),
 
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  physics: const BouncingScrollPhysics(),
+                Expanded(
+                  child: ListView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.all(16),
+                    physics: const BouncingScrollPhysics(),
                   children: [
                     _buildFieldLabel('Nama Barang / Target *', isDark),
                     CupertinoTextField(
@@ -980,8 +1083,9 @@ class _AddWishlistModalSheetState extends State<_AddWishlistModalSheet> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildFieldLabel(String label, bool isDark) {
     return Padding(

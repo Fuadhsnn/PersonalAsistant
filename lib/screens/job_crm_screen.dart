@@ -727,60 +727,68 @@ class _AddJobModalSheetState extends State<_AddJobModalSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final targetHeight = (screenHeight * 0.85).clamp(280.0, screenHeight - viewInsets.bottom - 44);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: DefaultTextStyle(
-        style: TextStyle(
-          decoration: TextDecoration.none,
-          color: AppleColors.label(isDark),
-          fontSize: 14,
-        ),
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: BoxDecoration(
-            color: AppleColors.cardBg(isDark),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return AnimatedPadding(
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppleColors.label(isDark),
+            fontSize: 14,
           ),
-          child: Column(
-            children: [
-              // Header Bar
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Batal'),
-                    ),
-                    Text(
-                      widget.existing != null ? 'Edit Lamaran' : 'Tambah Lamaran',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.none,
-                        color: AppleColors.label(isDark),
+          child: Container(
+            height: targetHeight,
+            decoration: BoxDecoration(
+              color: AppleColors.cardBg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Header Bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal'),
                       ),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _save,
-                      child: const Text(
-                        'Simpan',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Text(
+                        widget.existing != null ? 'Edit Lamaran' : 'Tambah Lamaran',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                          color: AppleColors.label(isDark),
+                        ),
                       ),
-                    ),
-                  ],
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _save,
+                        child: const Text(
+                          'Simpan',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Divider(height: 1),
+                const Divider(height: 1),
 
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  physics: const BouncingScrollPhysics(),
+                Expanded(
+                  child: ListView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.all(16),
+                    physics: const BouncingScrollPhysics(),
                   children: [
                     // Company
                     _buildFieldLabel('Nama Perusahaan *', isDark),
@@ -916,6 +924,7 @@ class _AddJobModalSheetState extends State<_AddJobModalSheet> {
       ),
     ),
   ),
+),
 );
   }
 

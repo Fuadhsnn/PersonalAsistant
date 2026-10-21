@@ -22,23 +22,52 @@ class StorageService {
   static const String _wishlistsKey = 'hasan_dashboard_wishlists_v1';
   static const String _shortcutsKey = 'hasan_dashboard_shortcuts_v1';
   static const String _calorieGoalKey = 'hasan_dashboard_calorie_goal';
+  static const String _dummyWipedKey = 'hasan_dashboard_dummy_wiped_v2';
+  static const String _walletBalanceKey = 'hasan_dashboard_wallet_balance';
+
+  Future<void> _ensureDummyWiped() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_dummyWipedKey) != true) {
+      await prefs.setString(_tasksKey, '[]');
+      await prefs.setString(_jobAppsKey, '[]');
+      await prefs.setString(_caloriesKey, '[]');
+      await prefs.setString(_habitsKey, '[]');
+      await prefs.setString(_shoesKey, '[]');
+      await prefs.setString(_runsKey, '[]');
+      await prefs.setString(_financesKey, '[]');
+      await prefs.setString(_wishlistsKey, '[]');
+      await prefs.setString(_shortcutsKey, '[]');
+      await prefs.setString(_quickNoteKey, '');
+      await prefs.setDouble(_walletBalanceKey, 0.0);
+      final defaultPbs = _getDefaultPersonalBests();
+      await prefs.setString(_pbsKey, jsonEncode(defaultPbs.map((p) => p.toJson()).toList()));
+      await prefs.setBool(_dummyWipedKey, true);
+    }
+  }
+
+  List<PersonalBest> _getDefaultPersonalBests() {
+    return const [
+      PersonalBest(distanceLabel: '5 KM', time: '--:--', pace: '-- /km', dateStr: '-'),
+      PersonalBest(distanceLabel: '10 KM', time: '--:--', pace: '-- /km', dateStr: '-'),
+      PersonalBest(distanceLabel: '21 KM (Half)', time: '--:--', pace: '-- /km', dateStr: '-'),
+    ];
+  }
 
   // --- Tasks ---
   Future<List<TaskItem>> loadTasks() async {
+    await _ensureDummyWiped();
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_tasksKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final initialTasks = _getSampleTasks();
-      await saveTasks(initialTasks);
-      return initialTasks;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => TaskItem.fromJson(item as Map<String, dynamic>)).toList();
     } catch (e) {
-      return _getSampleTasks();
+      return [];
     }
   }
 
@@ -54,16 +83,14 @@ class StorageService {
     final jsonString = prefs.getString(_jobAppsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleJobApplications();
-      await saveJobApplications(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => JobApplication.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleJobApplications();
+      return [];
     }
   }
 
@@ -79,16 +106,14 @@ class StorageService {
     final jsonString = prefs.getString(_caloriesKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleCalorieLogs();
-      await saveCalorieLogs(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => CalorieLog.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleCalorieLogs();
+      return [];
     }
   }
 
@@ -104,16 +129,14 @@ class StorageService {
     final jsonString = prefs.getString(_habitsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleHabits();
-      await saveHabits(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => HabitItem.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleHabits();
+      return [];
     }
   }
 
@@ -123,22 +146,20 @@ class StorageService {
     await prefs.setString(_habitsKey, jsonEncode(jsonList));
   }
 
-  // --- Running Shoes ---
+  // --- Shoes ---
   Future<List<ShoeItem>> loadShoes() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_shoesKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleShoes();
-      await saveShoes(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => ShoeItem.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleShoes();
+      return [];
     }
   }
 
@@ -154,16 +175,14 @@ class StorageService {
     final jsonString = prefs.getString(_runsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleRunLogs();
-      await saveRunLogs(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => RunLog.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleRunLogs();
+      return [];
     }
   }
 
@@ -179,16 +198,17 @@ class StorageService {
     final jsonString = prefs.getString(_pbsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSamplePersonalBests();
-      await savePersonalBests(samples);
-      return samples;
+      final defaults = _getDefaultPersonalBests();
+      await savePersonalBests(defaults);
+      return defaults;
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
-      return decoded.map((item) => PersonalBest.fromJson(item as Map<String, dynamic>)).toList();
+      final list = decoded.map((item) => PersonalBest.fromJson(item as Map<String, dynamic>)).toList();
+      return list.isEmpty ? _getDefaultPersonalBests() : list;
     } catch (_) {
-      return _getSamplePersonalBests();
+      return _getDefaultPersonalBests();
     }
   }
 
@@ -204,16 +224,14 @@ class StorageService {
     final jsonString = prefs.getString(_financesKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleFinances();
-      await saveFinanceTransactions(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => FinanceTransaction.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleFinances();
+      return [];
     }
   }
 
@@ -229,16 +247,14 @@ class StorageService {
     final jsonString = prefs.getString(_wishlistsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleWishlists();
-      await saveWishlists(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => WishlistItem.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleWishlists();
+      return [];
     }
   }
 
@@ -254,16 +270,14 @@ class StorageService {
     final jsonString = prefs.getString(_shortcutsKey);
 
     if (jsonString == null || jsonString.isEmpty) {
-      final samples = _getSampleShortcuts();
-      await saveShortcuts(samples);
-      return samples;
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
       return decoded.map((item) => ShortcutItem.fromJson(item as Map<String, dynamic>)).toList();
     } catch (_) {
-      return _getSampleShortcuts();
+      return [];
     }
   }
 
@@ -271,6 +285,36 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = shortcuts.map((s) => s.toJson()).toList();
     await prefs.setString(_shortcutsKey, jsonEncode(jsonList));
+  }
+
+  // --- Wallet Starting Balance ---
+  Future<double> loadWalletStartingBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(_walletBalanceKey) ?? 0.0;
+  }
+
+  Future<void> saveWalletStartingBalance(double balance) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_walletBalanceKey, balance);
+  }
+
+  // --- Clear All Data Completely ---
+  Future<void> clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tasksKey, '[]');
+    await prefs.setString(_jobAppsKey, '[]');
+    await prefs.setString(_caloriesKey, '[]');
+    await prefs.setString(_habitsKey, '[]');
+    await prefs.setString(_shoesKey, '[]');
+    await prefs.setString(_runsKey, '[]');
+    await prefs.setString(_financesKey, '[]');
+    await prefs.setString(_wishlistsKey, '[]');
+    await prefs.setString(_shortcutsKey, '[]');
+    await prefs.setString(_quickNoteKey, '');
+    await prefs.setDouble(_walletBalanceKey, 0.0);
+    final defaultPbs = _getDefaultPersonalBests();
+    await prefs.setString(_pbsKey, jsonEncode(defaultPbs.map((p) => p.toJson()).toList()));
+    await prefs.setBool(_dummyWipedKey, true);
   }
 
   // --- Calorie Goal ---
@@ -393,388 +437,5 @@ class StorageService {
     }
   }
 
-  // --- Seed Samples ---
-  List<TaskItem> _getSampleTasks() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day, 18, 0);
-
-    return [
-      TaskItem(
-        id: '1',
-        title: 'Review portofolio GitHub & update link project',
-        notes: 'Pastikan README Personal Assistant rapi dan ada demo Vercel',
-        dueDate: today,
-        priority: TaskPriority.high,
-        category: 'Karir',
-        isCompleted: false,
-      ),
-      TaskItem(
-        id: '2',
-        title: 'Persiapan Technical Interview PT Telkom / Mandiri',
-        notes: 'Review query SQL (Window Functions & CTE) dan REST API',
-        dueDate: today,
-        priority: TaskPriority.high,
-        category: 'Karir',
-        isCompleted: true,
-        completedAt: now,
-      ),
-      TaskItem(
-        id: '3',
-        title: 'Easy Run 5 km (Pace santai 5:45)',
-        notes: 'Pakai sepatu Nike Pegasus 40 di rute GBK / komplek',
-        dueDate: today,
-        priority: TaskPriority.medium,
-        category: 'Running',
-        isCompleted: false,
-      ),
-      TaskItem(
-        id: '4',
-        title: 'Catat pengeluaran mingguan & cek runway dana darurat',
-        notes: 'Sinkronisasi kas harian dan target tabungan',
-        dueDate: today.add(const Duration(days: 2)),
-        priority: TaskPriority.low,
-        category: 'Keuangan',
-        isCompleted: false,
-      ),
-    ];
-  }
-
-  List<JobApplication> _getSampleJobApplications() {
-    final now = DateTime.now();
-    return [
-      JobApplication(
-        id: 'job_1',
-        company: 'Traveloka',
-        position: 'Associate Software Engineer',
-        workSystem: 'Hybrid (Jakarta)',
-        salaryExpectation: 'Rp 9.000.000 - 12.000.000',
-        cvVersion: 'CV_Software_Hasan_2026.pdf',
-        status: JobStatus.interview,
-        appliedDate: now.subtract(const Duration(days: 8)),
-        followUpDate: now.add(const Duration(days: 2)),
-        notes: 'Interview User teknis hari Kamis jam 14:00 WIB via Google Meet.',
-        hrContact: 'siti.hr@traveloka.com',
-      ),
-      JobApplication(
-        id: 'job_2',
-        company: 'Bank Central Asia (BCA)',
-        position: 'IT Trainee / Specialist',
-        workSystem: 'On-site (Wisma Asia)',
-        salaryExpectation: 'Standar Program Trainee',
-        cvVersion: 'CV_General_Hasan_2026.pdf',
-        status: JobStatus.technical,
-        appliedDate: now.subtract(const Duration(days: 14)),
-        followUpDate: now.add(const Duration(days: 1)),
-        notes: 'Sedang mengerjakan online assessment Hackerrank (Data Structure).',
-        hrContact: 'recruitment@bca.co.id',
-      ),
-      JobApplication(
-        id: 'job_3',
-        company: 'Goto Group (Tokopedia)',
-        position: 'Data Analyst / BI Associate',
-        workSystem: 'Hybrid (BSD)',
-        salaryExpectation: 'Rp 8.500.000 - 11.000.000',
-        cvVersion: 'CV_Data_Hasan_2026.pdf',
-        status: JobStatus.screening,
-        appliedDate: now.subtract(const Duration(days: 4)),
-        notes: 'Screening profil via LinkedIn Talent.',
-        hrContact: 'talent@tokopedia.com',
-      ),
-      JobApplication(
-        id: 'job_4',
-        company: 'Agate Game Studio',
-        position: 'Junior Unity Developer',
-        workSystem: 'Remote',
-        salaryExpectation: 'Rp 7.500.000 - 9.500.000',
-        cvVersion: 'CV_GameDev_Hasan_2026.pdf',
-        status: JobStatus.applied,
-        appliedDate: now.subtract(const Duration(days: 2)),
-        notes: 'Portofolio game prototype terlampir di CV.',
-      ),
-    ];
-  }
-
-  List<CalorieLog> _getSampleCalorieLogs() {
-    final now = DateTime.now();
-    return [
-      CalorieLog(
-        id: 'cal_1',
-        foodName: 'Kopi Susu Jago (Aren)',
-        calories: 195,
-        mealType: 'Camilan/Kopi',
-        dateTime: DateTime(now.year, now.month, now.day, 8, 30),
-      ),
-      CalorieLog(
-        id: 'cal_2',
-        foodName: 'Warteg (Nasi + Telur Dadar + Orek Tempe)',
-        calories: 430,
-        mealType: 'Makan Siang',
-        dateTime: DateTime(now.year, now.month, now.day, 12, 15),
-      ),
-      CalorieLog(
-        id: 'cal_3',
-        foodName: 'Telur Rebus (2 Butir)',
-        calories: 140,
-        mealType: 'Camilan/Kopi',
-        dateTime: DateTime(now.year, now.month, now.day, 16, 0),
-      ),
-    ];
-  }
-
-  List<HabitItem> _getSampleHabits() {
-    final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    final yesterday = now.subtract(const Duration(days: 1));
-    final yestStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
-    final twoDaysAgo = now.subtract(const Duration(days: 2));
-    final twoDaysStr = '${twoDaysAgo.year}-${twoDaysAgo.month.toString().padLeft(2, '0')}-${twoDaysAgo.day.toString().padLeft(2, '0')}';
-
-    return [
-      HabitItem(
-        id: 'h_1',
-        title: 'Minum Air 2.5 Liter',
-        iconCode: 'drop',
-        colorValue: 0xFF007AFF,
-        completedDateStrings: [twoDaysStr, yestStr, todayStr],
-      ),
-      HabitItem(
-        id: 'h_2',
-        title: 'Lari / Olahraga 30 Menit',
-        iconCode: 'figure.run',
-        colorValue: 0xFFFF2D55,
-        completedDateStrings: [twoDaysStr, yestStr],
-      ),
-      HabitItem(
-        id: 'h_3',
-        title: 'Belajar / Coding 1 Jam',
-        iconCode: 'laptopcomputer',
-        colorValue: 0xFF5856D6,
-        completedDateStrings: [twoDaysStr, yestStr, todayStr],
-      ),
-      HabitItem(
-        id: 'h_4',
-        title: 'Tidur Sebelum 23:30',
-        iconCode: 'moon.stars',
-        colorValue: 0xFFFF9500,
-        completedDateStrings: [yestStr],
-      ),
-    ];
-  }
-
-  List<ShoeItem> _getSampleShoes() {
-    return [
-      ShoeItem(
-        id: 'shoe_1',
-        name: 'Pegasus 40 (Daily Trainer)',
-        brand: 'Nike',
-        currentKm: 284.5,
-        targetMaxKm: 650.0,
-        colorValue: 0xFF007AFF, // Blue
-        isRetired: false,
-      ),
-      ShoeItem(
-        id: 'shoe_2',
-        name: 'Novablast 4 (Long Run / Tempo)',
-        brand: 'Asics',
-        currentKm: 142.0,
-        targetMaxKm: 700.0,
-        colorValue: 0xFFFF9500, // Orange
-        isRetired: false,
-      ),
-      ShoeItem(
-        id: 'shoe_3',
-        name: 'Vaporfly Next% 2 (Race Day)',
-        brand: 'Nike',
-        currentKm: 48.0,
-        targetMaxKm: 350.0,
-        colorValue: 0xFFFF2D55, // Pink/Red
-        isRetired: false,
-      ),
-    ];
-  }
-
-  List<RunLog> _getSampleRunLogs() {
-    final now = DateTime.now();
-    return [
-      RunLog(
-        id: 'run_1',
-        distanceKm: 5.2,
-        durationMinutes: 28,
-        pace: '5:23 /km',
-        shoeId: 'shoe_1',
-        shoeName: 'Nike Pegasus 40',
-        date: now.subtract(const Duration(days: 1)),
-        notes: 'Recovery run sore di komplek, cuaca sejuk.',
-      ),
-      RunLog(
-        id: 'run_2',
-        distanceKm: 10.0,
-        durationMinutes: 53,
-        pace: '5:18 /km',
-        shoeId: 'shoe_2',
-        shoeName: 'Asics Novablast 4',
-        date: now.subtract(const Duration(days: 3)),
-        notes: 'Long run pagi di GBK Senayan, cadence stabil.',
-      ),
-      RunLog(
-        id: 'run_3',
-        distanceKm: 5.0,
-        durationMinutes: 25,
-        pace: '5:02 /km',
-        shoeId: 'shoe_1',
-        shoeName: 'Nike Pegasus 40',
-        date: now.subtract(const Duration(days: 6)),
-        notes: 'Interval run 5x800m.',
-      ),
-    ];
-  }
-
-  List<PersonalBest> _getSamplePersonalBests() {
-    return const [
-      PersonalBest(
-        distanceLabel: '5 KM',
-        time: '24:12',
-        pace: '4:50 /km',
-        dateStr: 'Jan 2026 (GBK)',
-      ),
-      PersonalBest(
-        distanceLabel: '10 KM',
-        time: '52:15',
-        pace: '5:13 /km',
-        dateStr: 'Feb 2026',
-      ),
-      PersonalBest(
-        distanceLabel: '21 KM (Half)',
-        time: '1:58:30',
-        pace: '5:37 /km',
-        dateStr: 'Target 2026',
-      ),
-    ];
-  }
-
-  List<FinanceTransaction> _getSampleFinances() {
-    final now = DateTime.now();
-    return [
-      FinanceTransaction(
-        id: 'f_1',
-        title: 'Kopi Susu Jago + Sarapan Roti',
-        amount: 28000,
-        isExpense: true,
-        category: 'Makan & Kopi',
-        date: now,
-      ),
-      FinanceTransaction(
-        id: 'f_2',
-        title: 'Makan Siang Nasi Padang',
-        amount: 32000,
-        isExpense: true,
-        category: 'Makan & Kopi',
-        date: now.subtract(const Duration(days: 1)),
-      ),
-      FinanceTransaction(
-        id: 'f_3',
-        title: 'Project Freelance Landing Page',
-        amount: 2500000,
-        isExpense: false,
-        category: 'Pemasukan',
-        date: now.subtract(const Duration(days: 5)),
-      ),
-      FinanceTransaction(
-        id: 'f_4',
-        title: 'Isi Bensin & Parkir',
-        amount: 50000,
-        isExpense: true,
-        category: 'Transport',
-        date: now.subtract(const Duration(days: 3)),
-      ),
-    ];
-  }
-
-  List<WishlistItem> _getSampleWishlists() {
-    return [
-      WishlistItem(
-        id: 'w_1',
-        name: 'Sepatu Race Day (Asics Metaspeed / Nike Alphafly)',
-        targetPrice: 3800000,
-        savedAmount: 1900000,
-        iconCode: 'flame',
-      ),
-      WishlistItem(
-        id: 'w_2',
-        name: 'Garmin Forerunner 265 Music',
-        targetPrice: 6500000,
-        savedAmount: 2200000,
-        iconCode: 'watch',
-      ),
-    ];
-  }
-
-  List<ShortcutItem> _getSampleShortcuts() {
-    return const [
-      ShortcutItem(
-        id: 'sc_1',
-        title: 'LinkedIn',
-        url: 'https://www.linkedin.com',
-        category: 'Karir',
-        iconCode: 'briefcase',
-        colorValue: 0xFF0A66C2,
-      ),
-      ShortcutItem(
-        id: 'sc_2',
-        title: 'Jobstreet',
-        url: 'https://www.jobstreet.co.id',
-        category: 'Karir',
-        iconCode: 'briefcase',
-        colorValue: 0xFF1C3F95,
-      ),
-      ShortcutItem(
-        id: 'sc_3',
-        title: 'GitHub',
-        url: 'https://github.com',
-        category: 'Code',
-        iconCode: 'code',
-        colorValue: 0xFF24292E,
-      ),
-      ShortcutItem(
-        id: 'sc_4',
-        title: 'Strava',
-        url: 'https://www.strava.com',
-        category: 'Running',
-        iconCode: 'run',
-        colorValue: 0xFFFC4C02,
-      ),
-      ShortcutItem(
-        id: 'sc_5',
-        title: 'ChatGPT',
-        url: 'https://chatgpt.com',
-        category: 'AI',
-        iconCode: 'ai',
-        colorValue: 0xFF10A37F,
-      ),
-      ShortcutItem(
-        id: 'sc_6',
-        title: 'LeetCode',
-        url: 'https://leetcode.com',
-        category: 'Code',
-        iconCode: 'code',
-        colorValue: 0xFFFFA116,
-      ),
-      ShortcutItem(
-        id: 'sc_7',
-        title: 'YouTube',
-        url: 'https://youtube.com',
-        category: 'Media',
-        iconCode: 'video',
-        colorValue: 0xFFFF0000,
-      ),
-      ShortcutItem(
-        id: 'sc_8',
-        title: 'Notion',
-        url: 'https://notion.so',
-        category: 'Produktivitas',
-        iconCode: 'globe',
-        colorValue: 0xFF000000,
-      ),
-    ];
-  }
 }
+
