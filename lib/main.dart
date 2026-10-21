@@ -2,8 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'models/task_item.dart';
+import 'screens/calorie_habit_screen.dart';
+import 'screens/finance_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/job_crm_screen.dart';
 import 'screens/notes_screen.dart';
+import 'screens/quick_links_screen.dart';
+import 'screens/running_screen.dart';
 import 'screens/todo_screen.dart';
 import 'state/dashboard_state.dart';
 import 'theme/apple_colors.dart';
@@ -104,6 +109,41 @@ class _MainAppShellState extends State<MainAppShell> {
           onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
           onBackToHome: () => widget.state.setFeature(AppFeature.home),
           onOpenAddTask: (task) => _openAddTaskModal(context, existing: task),
+        );
+
+      case AppFeature.jobCrm:
+        return JobCrmScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
+        );
+
+      case AppFeature.running:
+        return RunningScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
+        );
+
+      case AppFeature.calories:
+        return CalorieHabitScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
+        );
+
+      case AppFeature.finance:
+        return FinanceScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
+        );
+
+      case AppFeature.quickLinks:
+        return QuickLinksScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
         );
 
       case AppFeature.notes:

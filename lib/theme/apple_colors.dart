@@ -38,4 +38,10 @@ class AppleColors {
   static Color textPrimary(bool isDark) => isDark ? darkTextPrimary : lightTextPrimary;
   static Color textSecondary(bool isDark) => isDark ? darkTextSecondary : lightTextSecondary;
   static Color textTertiary(bool isDark) => isDark ? darkTextTertiary : lightTextTertiary;
+
+  // Convenient HIG aliases
+  static Color cardBg(bool isDark) => card(isDark);
+  static Color label(bool isDark) => textPrimary(isDark);
+  static Color secondaryLabel(bool isDark) => textSecondary(isDark);
+  static Color tertiaryLabel(bool isDark) => textTertiary(isDark);
 }

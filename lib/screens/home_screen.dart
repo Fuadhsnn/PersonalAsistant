@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/task_item.dart';
+import '../models/shortcut_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../widgets/activity_rings_card.dart';
@@ -34,23 +36,29 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = state.isDarkMode;
     final now = DateTime.now();
-    final dateStr = DateFormat('EEEE, d MMMM', 'id_ID').format(now).toUpperCase();
-
-    // Priority tasks for today preview
+    final dateStr = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(now).toUpperCase();
     final topTasks = state.tasks.where((t) => !t.isCompleted).take(3).toList();
+    final topShortcuts = state.shortcuts.take(6).toList();
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 40),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Top Bar with Burger Menu & Settings
+              // Top Bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -81,14 +89,22 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
 
-                  Text(
-                    'PERSONAL DASHBOARD',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.0,
-                      color: AppleColors.textSecondary(isDark),
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        ' ',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        'PERSONAL ASSISTANT',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.0,
+                          color: AppleColors.textSecondary(isDark),
+                        ),
+                      ),
+                    ],
                   ),
 
                   CupertinoButton(
@@ -118,15 +134,15 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
               // Greeting & Date
               Text(
                 dateStr,
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
                   color: AppleColors.textSecondary(isDark),
                 ),
               ),
@@ -140,68 +156,216 @@ class HomeScreen extends StatelessWidget {
                   color: AppleColors.textPrimary(isDark),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // Apple Activity Rings Widget
+              // Apple Activity Rings Widget (To-Do, Habit, Calorie/Run)
               ActivityRingsCard(
                 todayProgress: state.todayProgress,
-                highPriorityProgress: state.highPriorityProgress,
-                overallProgress: state.overallProgress,
+                highPriorityProgress: state.habitProgressToday,
+                overallProgress: state.calorieProgress,
                 todayCount: state.todayCount,
                 completedToday: state.completedCount,
                 isDark: isDark,
               ),
+              const SizedBox(height: 20),
+
+              // Quick KPI Glance Grid (2x2)
+              Row(
+                children: [
+                  Expanded(
+                    child: _KpiGlanceCard(
+                      title: 'JOB HUNT CRM',
+                      mainVal: '${state.activeInterviewsCount}',
+                      unit: 'Proses Aktif',
+                      desc: state.offeringCount > 0 ? '${state.offeringCount} Offering 🏆' : '${state.totalJobsCount} Terkirim',
+                      icon: CupertinoIcons.briefcase_fill,
+                      accentColor: AppleColors.systemBlue,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.jobCrm),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _KpiGlanceCard(
+                      title: 'RUNNING (7 HARI)',
+                      mainVal: state.weeklyKm.toStringAsFixed(1),
+                      unit: 'KM',
+                      desc: '${state.activeShoes.length} Sepatu Rotasi',
+                      icon: CupertinoIcons.flame_fill,
+                      accentColor: const Color(0xFFFF2D55),
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.running),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _KpiGlanceCard(
+                      title: 'KEUANGAN & RUNWAY',
+                      mainVal: state.estimatedRunwayMonths.toStringAsFixed(1),
+                      unit: 'Bulan Aman',
+                      desc: 'Kas cadangan stabil',
+                      icon: CupertinoIcons.money_dollar_circle_fill,
+                      accentColor: AppleColors.systemGreen,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.finance),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _KpiGlanceCard(
+                      title: 'ASUPAN KALORI',
+                      mainVal: '${state.todayCalorieTotal}',
+                      unit: 'kcal',
+                      desc: '${state.remainingCalories} kcal sisa target',
+                      icon: CupertinoIcons.heart_fill,
+                      accentColor: AppleColors.systemOrange,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.calories),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
-              // Features Section Header
+              // Safari Favorites Horizontal Bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Fitur Personal',
+                    'Pintasan Safari',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.4,
                       color: AppleColors.textPrimary(isDark),
                     ),
                   ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => state.setFeature(AppFeature.quickLinks),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Semua Pintasan',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppleColors.systemBlue),
+                        ),
+                        SizedBox(width: 2),
+                        Icon(CupertinoIcons.chevron_forward, size: 14, color: AppleColors.systemBlue),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Horizontal Shortcuts
+              SizedBox(
+                height: 84,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: topShortcuts.length,
+                  itemBuilder: (context, index) {
+                    final item = topShortcuts[index];
+                    return _buildHomeShortcutPill(item, isDark);
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // All Features Navigation Launchpad
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
-                    'Pilih Fitur',
+                    'Modul Kehidupan (Life OS)',
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppleColors.textSecondary(isDark),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.4,
+                      color: AppleColors.textPrimary(isDark),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // Feature Cards Hub
               Row(
                 children: [
-                  // Feature 1: To-Do List
                   Expanded(
-                    child: _FeatureCard(
-                      icon: CupertinoIcons.check_mark_circled_solid,
-                      iconColor: AppleColors.systemOrange,
+                    child: _LaunchpadTile(
+                      title: 'Job Hunt CRM',
+                      subtitle: '${state.activeInterviewsCount} interview aktif',
+                      icon: CupertinoIcons.briefcase_fill,
+                      iconBg: AppleColors.systemBlue,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.jobCrm),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _LaunchpadTile(
+                      title: 'Running & Sepatu',
+                      subtitle: 'Odometer & rekor PB',
+                      icon: CupertinoIcons.flame_fill,
+                      iconBg: const Color(0xFFFF2D55),
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.running),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _LaunchpadTile(
+                      title: 'Kalori & Habit',
+                      subtitle: 'Preset makanan nusantara',
+                      icon: CupertinoIcons.heart_fill,
+                      iconBg: AppleColors.systemOrange,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.calories),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _LaunchpadTile(
+                      title: 'Keuangan & Runway',
+                      subtitle: 'Apple card & wishlist',
+                      icon: CupertinoIcons.money_dollar_circle_fill,
+                      iconBg: AppleColors.systemGreen,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.finance),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _LaunchpadTile(
                       title: 'To-Do List',
-                      subtitle: '${state.allCount} tugas aktif',
-                      badgeText: state.todayCount > 0 ? '${state.todayCount} Hari Ini' : null,
+                      subtitle: '${state.allCount} tugas pending',
+                      icon: CupertinoIcons.check_mark_circled_solid,
+                      iconBg: AppleColors.systemIndigo,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.todo),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Feature 2: Catatan Cepat
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: _FeatureCard(
-                      iconWidget: const AppleNoteIcon(color: CupertinoColors.white, size: 20),
-                      iconColor: AppleColors.systemYellow,
+                    child: _LaunchpadTile(
                       title: 'Catatan Cepat',
-                      subtitle: 'Memo instan',
-                      badgeText: 'Scratchpad',
+                      subtitle: 'Scratchpad ide & riset',
+                      iconWidget: const AppleNoteIcon(color: CupertinoColors.white, size: 16),
+                      iconBg: AppleColors.systemYellow,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.notes),
                     ),
@@ -210,14 +374,14 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Quick Tasks Glance Header
+              // Priority Tasks Glance Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Prioritas Segera',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.4,
                       color: AppleColors.textPrimary(isDark),
@@ -232,7 +396,7 @@ class HomeScreen extends StatelessWidget {
                         Text(
                           'Lihat Semua',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppleColors.systemBlue,
                           ),
@@ -246,23 +410,23 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              // Top 3 tasks preview or empty card
               if (topTasks.isEmpty)
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppleColors.card(isDark),
                     borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppleColors.separator(isDark)),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: const BoxDecoration(
                           color: Color(0x2034C759),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(CupertinoIcons.checkmark_shield_fill, color: AppleColors.systemGreen, size: 24),
+                        child: const Icon(CupertinoIcons.checkmark_shield_fill, color: AppleColors.systemGreen, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -272,7 +436,7 @@ class HomeScreen extends StatelessWidget {
                             Text(
                               'Semua tugas telah tuntas! 🎉',
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: AppleColors.textPrimary(isDark),
                               ),
@@ -300,9 +464,7 @@ class HomeScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppleColors.card(isDark),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
-                        ),
+                        border: Border.all(color: AppleColors.separator(isDark)),
                       ),
                       child: Row(
                         children: [
@@ -311,8 +473,8 @@ class HomeScreen extends StatelessWidget {
                             minimumSize: Size.zero,
                             onPressed: () => state.toggleTask(task.id),
                             child: Container(
-                              width: 24,
-                              height: 24,
+                              width: 22,
+                              height: 22,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
@@ -328,7 +490,7 @@ class HomeScreen extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: AppleColors.textPrimary(isDark),
                               ),
@@ -343,7 +505,7 @@ class HomeScreen extends StatelessWidget {
                             child: Text(
                               task.category,
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: AppleColors.textSecondary(isDark),
                               ),
@@ -354,25 +516,26 @@ class HomeScreen extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Inline Quick Scratchpad Card
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Scratchpad Harian',
+                    'Catatan Cepat (Scratchpad)',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.4,
                       color: AppleColors.textPrimary(isDark),
                     ),
                   ),
                   Text(
-                    'Tersimpan Otomatis',
+                    'Auto-Save',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                       color: AppleColors.textSecondary(isDark),
                     ),
                   ),
@@ -391,106 +554,247 @@ class HomeScreen extends StatelessWidget {
       ],
     );
   }
+
+  Widget _buildHomeShortcutPill(ShortcutItem item, bool isDark) {
+    IconData iconData = CupertinoIcons.globe;
+    switch (item.iconCode) {
+      case 'briefcase':
+        iconData = CupertinoIcons.briefcase_fill;
+        break;
+      case 'code':
+        iconData = CupertinoIcons.chevron_left_slash_chevron_right;
+        break;
+      case 'run':
+        iconData = CupertinoIcons.flame_fill;
+        break;
+      case 'ai':
+        iconData = CupertinoIcons.sparkles;
+        break;
+      case 'video':
+        iconData = CupertinoIcons.play_rectangle_fill;
+        break;
+    }
+
+    return GestureDetector(
+      onTap: () => _launchUrl(item.url),
+      child: Container(
+        width: 68,
+        margin: const EdgeInsets.only(right: 12),
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Color(item.colorValue),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(item.colorValue).withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Icon(iconData, color: CupertinoColors.white, size: 24),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              item.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppleColors.label(isDark),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _FeatureCard extends StatelessWidget {
-  final IconData? icon;
-  final Widget? iconWidget;
-  final Color iconColor;
+class _KpiGlanceCard extends StatelessWidget {
   final String title;
-  final String subtitle;
-  final String? badgeText;
+  final String mainVal;
+  final String unit;
+  final String desc;
+  final IconData icon;
+  final Color accentColor;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _FeatureCard({
-    this.icon,
-    this.iconWidget,
-    required this.iconColor,
+  const _KpiGlanceCard({
     required this.title,
-    required this.subtitle,
-    this.badgeText,
+    required this.mainVal,
+    required this.unit,
+    required this.desc,
+    required this.icon,
+    required this.accentColor,
     required this.isDark,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: onTap,
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppleColors.card(isDark),
-          borderRadius: BorderRadius.circular(20),
+          color: AppleColors.cardBg(isDark),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppleColors.separator(isDark)),
           boxShadow: [
             BoxShadow(
-              color: isDark ? const Color(0x22000000) : const Color(0x08000000),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: CupertinoColors.black.withOpacity(isDark ? 0.3 : 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
-          border: Border.all(
-            color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
-          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: iconColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: iconWidget ?? Icon(icon, color: CupertinoColors.white, size: 20),
+                Icon(icon, size: 14, color: accentColor),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      color: AppleColors.secondaryLabel(isDark),
+                    ),
                   ),
                 ),
-                const Icon(CupertinoIcons.chevron_forward, size: 16, color: Color(0xFFC7C7CC)),
+                Icon(CupertinoIcons.chevron_forward, size: 12, color: AppleColors.tertiaryLabel(isDark)),
               ],
             ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: AppleColors.textPrimary(isDark),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 13,
-                color: AppleColors.textSecondary(isDark),
-              ),
-            ),
-            if (badgeText != null) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: isDark ? 0.25 : 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  badgeText!,
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  mainVal,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: iconColor,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                    color: AppleColors.label(isDark),
                   ),
                 ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    unit,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 3),
+            Text(
+              desc,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppleColors.secondaryLabel(isDark),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LaunchpadTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData? icon;
+  final Widget? iconWidget;
+  final Color iconBg;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _LaunchpadTile({
+    required this.title,
+    required this.subtitle,
+    this.icon,
+    this.iconWidget,
+    required this.iconBg,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppleColors.cardBg(isDark),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppleColors.separator(isDark)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: iconWidget ?? Icon(icon, color: CupertinoColors.white, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppleColors.label(isDark),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppleColors.secondaryLabel(isDark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(CupertinoIcons.chevron_forward, size: 12, color: AppleColors.tertiaryLabel(isDark)),
           ],
         ),
       ),
@@ -545,9 +849,7 @@ class _QuickScratchpadWidgetState extends State<_QuickScratchpadWidget> {
       decoration: BoxDecoration(
         color: AppleColors.card(isDark),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? const Color(0x1AFFFFFF) : const Color(0x0A000000),
-        ),
+        border: Border.all(color: AppleColors.separator(isDark)),
       ),
       child: Column(
         children: [
@@ -563,7 +865,7 @@ class _QuickScratchpadWidgetState extends State<_QuickScratchpadWidget> {
               color: AppleColors.textPrimary(isDark),
               height: 1.4,
             ),
-            maxLines: 4,
+            maxLines: 3,
             padding: EdgeInsets.zero,
             decoration: null,
             onChanged: widget.onChanged,
