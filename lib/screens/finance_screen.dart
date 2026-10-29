@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/finance_item.dart';
+import '../models/split_bill_model.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../widgets/apple_burger_icon.dart';
+import 'split_bill_screen.dart';
 
 class FinanceScreen extends StatelessWidget {
   final DashboardState state;
@@ -79,6 +81,44 @@ class FinanceScreen extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       builder: (ctx) => _AddWishlistModalSheet(state: state),
+    );
+  }
+
+  void _openSplitBill(BuildContext context, [SplitBillSession? session]) {
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (ctx) => SplitBillScreen(
+          state: state,
+          initialSession: session,
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteSplitBill(BuildContext context, SplitBillSession session) {
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Hapus Sesi Split Bill?'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text('Hapus riwayat patungan "${session.merchantName}"?'),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Batal'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Hapus'),
+            onPressed: () {
+              state.deleteSplitBillSession(session.id);
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -414,6 +454,9 @@ class FinanceScreen extends StatelessWidget {
           ),
         ),
 
+        // Section: Split Bill (ala GoPay)
+        _buildSplitBillSection(context, isDark, currencyFormat),
+
         // Section: Wishlist & Savings Goals
         SliverToBoxAdapter(
           child: Padding(
@@ -521,6 +564,289 @@ class FinanceScreen extends StatelessWidget {
 
         const SliverToBoxAdapter(child: SizedBox(height: 48)),
       ],
+    );
+  }
+
+  Widget _buildSplitBillSection(
+    BuildContext context,
+    bool isDark,
+    NumberFormat currencyFormat,
+  ) {
+    final splitBills = state.splitBills;
+    final activeCount = splitBills.where((s) => s.paidCount < s.participants.length).length;
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'FITUR SPLIT BILL (ALA GOPAY)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: AppleColors.secondaryLabel(isDark),
+                  ),
+                ),
+                if (activeCount > 0) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppleColors.systemOrange.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$activeCount Belum Lunas',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppleColors.systemOrange,
+                      ),
+                    ),
+                  ),
+                ],
+                const Spacer(),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minSize: 24,
+                  onPressed: () => _openSplitBill(context),
+                  child: Row(
+                    children: [
+                      Icon(CupertinoIcons.camera_viewfinder, size: 14, color: AppleColors.systemBlue),
+                      const SizedBox(width: 4),
+                      Text(
+                        '+ Scan Struk',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppleColors.systemBlue),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Hero Card for Split Bill Feature
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _openSplitBill(context),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF1E2433), const Color(0xFF131722)]
+                        : [const Color(0xFFF1F6FE), const Color(0xFFE5EEFC)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark
+                        ? CupertinoColors.white.withValues(alpha: 0.1)
+                        : AppleColors.systemBlue.withValues(alpha: 0.25),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: CupertinoColors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppleColors.systemBlue.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        CupertinoIcons.doc_text_viewfinder,
+                        color: AppleColors.systemBlue,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Mulai Sesi Split Bill',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppleColors.textPrimary(isDark),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppleColors.systemPurple.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Gemini AI',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppleColors.systemPurple,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Foto struk, pilih barang tiap orang, hitung pajak & salin ke WA.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppleColors.textSecondary(isDark),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      CupertinoIcons.chevron_forward,
+                      size: 18,
+                      color: AppleColors.textTertiary(isDark),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // If there are existing split bill sessions, show recent list
+            if (splitBills.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Column(
+                children: splitBills.take(3).map((session) {
+                  return _buildSplitBillSessionTile(context, session, isDark, currencyFormat);
+                }).toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSplitBillSessionTile(
+    BuildContext context,
+    SplitBillSession session,
+    bool isDark,
+    NumberFormat currencyFormat,
+  ) {
+    final isAllPaid = session.paidCount == session.participants.length && session.participants.isNotEmpty;
+    final dateFormat = DateFormat('dd MMM yyyy', 'id_ID');
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _openSplitBill(context, session),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppleColors.cardBg(isDark),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppleColors.separator(isDark)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: (isAllPaid ? AppleColors.systemGreen : AppleColors.systemOrange).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isAllPaid ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.clock_fill,
+                color: isAllPaid ? AppleColors.systemGreen : AppleColors.systemOrange,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.merchantName,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppleColors.label(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${dateFormat.format(session.createdAt)} • ${session.participants.length} orang',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppleColors.secondaryLabel(isDark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  currencyFormat.format(session.grandTotal),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: AppleColors.label(isDark),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: (isAllPaid ? AppleColors.systemGreen : AppleColors.systemOrange).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${session.paidCount}/${session.participants.length} Lunas',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: isAllPaid ? AppleColors.systemGreen : AppleColors.systemOrange,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              minSize: 24,
+              onPressed: () => _confirmDeleteSplitBill(context, session),
+              child: Icon(
+                CupertinoIcons.trash,
+                size: 16,
+                color: AppleColors.textTertiary(isDark),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -5,6 +5,7 @@ import '../models/calorie_habit_item.dart';
 import '../models/running_shoe_item.dart';
 import '../models/finance_item.dart';
 import '../models/shortcut_item.dart';
+import '../models/split_bill_model.dart';
 import '../services/storage_service.dart';
 import '../services/strava_service.dart';
 
@@ -89,6 +90,8 @@ class DashboardState extends ChangeNotifier {
   List<FinanceTransaction> _finances = [];
   List<WishlistItem> _wishlists = [];
   double _walletStartingBalance = 0.0;
+  List<SplitBillSession> _splitBills = [];
+  String _geminiApiKey = '';
 
   // Shortcuts State
   List<ShortcutItem> _shortcuts = [];
@@ -147,6 +150,8 @@ class DashboardState extends ChangeNotifier {
   List<FinanceTransaction> get finances => _finances;
   List<WishlistItem> get wishlists => _wishlists;
   double get walletStartingBalance => _walletStartingBalance;
+  List<SplitBillSession> get splitBills => _splitBills;
+  String get geminiApiKey => _geminiApiKey;
 
   // Shortcuts
   List<ShortcutItem> get shortcuts => _shortcuts;
@@ -166,6 +171,8 @@ class DashboardState extends ChangeNotifier {
     _finances = await _storageService.loadFinanceTransactions();
     _wishlists = await _storageService.loadWishlists();
     _shortcuts = await _storageService.loadShortcuts();
+    _splitBills = await _storageService.loadSplitBills();
+    _geminiApiKey = await _storageService.loadGeminiApiKey();
     _calorieGoal = await _storageService.loadCalorieGoal();
     _walletStartingBalance = await _storageService.loadWalletStartingBalance();
 
@@ -756,6 +763,47 @@ class DashboardState extends ChangeNotifier {
     _wishlists.removeWhere((w) => w.id == id);
     notifyListeners();
     await _storageService.saveWishlists(_wishlists);
+  }
+
+  // --- Split Bill Sessions ---
+  Future<void> setGeminiApiKey(String key) async {
+    _geminiApiKey = key.trim();
+    notifyListeners();
+    await _storageService.saveGeminiApiKey(_geminiApiKey);
+  }
+
+  Future<void> saveSplitBillSession(SplitBillSession session) async {
+    final idx = _splitBills.indexWhere((s) => s.id == session.id);
+    if (idx != -1) {
+      _splitBills[idx] = session;
+    } else {
+      _splitBills.insert(0, session);
+    }
+    notifyListeners();
+    await _storageService.saveSplitBills(_splitBills);
+  }
+
+  Future<void> deleteSplitBillSession(String id) async {
+    _splitBills.removeWhere((s) => s.id == id);
+    notifyListeners();
+    await _storageService.saveSplitBills(_splitBills);
+  }
+
+  Future<void> toggleParticipantPaid(String sessionId, String participantId) async {
+    final sIdx = _splitBills.indexWhere((s) => s.id == sessionId);
+    if (sIdx == -1) return;
+
+    final session = _splitBills[sIdx];
+    final updatedParticipants = session.participants.map((p) {
+      if (p.id == participantId) {
+        return p.copyWith(isPaid: !p.isPaid);
+      }
+      return p;
+    }).toList();
+
+    _splitBills[sIdx] = session.copyWith(participants: updatedParticipants);
+    notifyListeners();
+    await _storageService.saveSplitBills(_splitBills);
   }
 
   // ==========================================

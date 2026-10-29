@@ -15,17 +15,20 @@ class SettingsSheet extends StatefulWidget {
 
 class _SettingsSheetState extends State<SettingsSheet> {
   late TextEditingController _nameController;
+  late TextEditingController _apiKeyController;
   String? _statusMessage;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.state.userName);
+    _apiKeyController = TextEditingController(text: widget.state.geminiApiKey);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _apiKeyController.dispose();
     super.dispose();
   }
 
@@ -267,6 +270,82 @@ class _SettingsSheetState extends State<SettingsSheet> {
                           onChanged: (_) => widget.state.toggleDarkMode(),
                         ),
                       ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Section: Google Gemini Vision AI
+            _buildSectionHeader('INTEGRASI AI & VISION (SPLIT BILL)', isDark),
+            Container(
+              decoration: BoxDecoration(
+                color: AppleColors.cardSecondary(isDark),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(CupertinoIcons.sparkles,
+                          color: AppleColors.systemPurple, size: 22),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Gemini API Key',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppleColors.textPrimary(isDark),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Digunakan untuk scan & ekstraksi struk belanja otomatis.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppleColors.textSecondary(isDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  CupertinoTextField(
+                    controller: _apiKeyController,
+                    placeholder: 'Tempel Gemini API Key (AI Studio)...',
+                    obscureText: true,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppleColors.textPrimary(isDark),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppleColors.card(isDark),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppleColors.separator(isDark),
+                      ),
+                    ),
+                    suffix: CupertinoButton(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minSize: 28,
+                      child: const Text('Simpan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      onPressed: () async {
+                        await widget.state.setGeminiApiKey(_apiKeyController.text);
+                        if (!mounted) return;
+                        setState(() {
+                          _statusMessage = 'Gemini API Key berhasil disimpan!';
+                        });
+                      },
                     ),
                   ),
                 ],

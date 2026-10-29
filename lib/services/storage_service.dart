@@ -6,6 +6,7 @@ import '../models/calorie_habit_item.dart';
 import '../models/running_shoe_item.dart';
 import '../models/finance_item.dart';
 import '../models/shortcut_item.dart';
+import '../models/split_bill_model.dart';
 
 class StorageService {
   static const String _tasksKey = 'hasan_dashboard_tasks_v1';
@@ -24,6 +25,8 @@ class StorageService {
   static const String _calorieGoalKey = 'hasan_dashboard_calorie_goal';
   static const String _dummyWipedKey = 'hasan_dashboard_dummy_wiped_v2';
   static const String _walletBalanceKey = 'hasan_dashboard_wallet_balance';
+  static const String _splitBillsKey = 'hasan_dashboard_split_bills_v1';
+  static const String _geminiApiKeyKey = 'hasan_dashboard_gemini_api_key';
 
   Future<void> _ensureDummyWiped() async {
     final prefs = await SharedPreferences.getInstance();
@@ -310,11 +313,45 @@ class StorageService {
     await prefs.setString(_financesKey, '[]');
     await prefs.setString(_wishlistsKey, '[]');
     await prefs.setString(_shortcutsKey, '[]');
+    await prefs.setString(_splitBillsKey, '[]');
     await prefs.setString(_quickNoteKey, '');
     await prefs.setDouble(_walletBalanceKey, 0.0);
     final defaultPbs = _getDefaultPersonalBests();
     await prefs.setString(_pbsKey, jsonEncode(defaultPbs.map((p) => p.toJson()).toList()));
     await prefs.setBool(_dummyWipedKey, true);
+  }
+
+  // --- Split Bill Sessions ---
+  Future<List<SplitBillSession>> loadSplitBills() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_splitBillsKey);
+    if (jsonString == null || jsonString.isEmpty) return [];
+
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
+      return decoded
+          .map((item) => SplitBillSession.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveSplitBills(List<SplitBillSession> bills) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = bills.map((b) => b.toJson()).toList();
+    await prefs.setString(_splitBillsKey, jsonEncode(jsonList));
+  }
+
+  // --- Gemini API Key ---
+  Future<String> loadGeminiApiKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_geminiApiKeyKey) ?? '';
+  }
+
+  Future<void> saveGeminiApiKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_geminiApiKeyKey, key.trim());
   }
 
   // --- Calorie Goal ---
@@ -380,6 +417,8 @@ class StorageService {
       'finances': jsonDecode(prefs.getString(_financesKey) ?? '[]'),
       'wishlists': jsonDecode(prefs.getString(_wishlistsKey) ?? '[]'),
       'shortcuts': jsonDecode(prefs.getString(_shortcutsKey) ?? '[]'),
+      'splitBills': jsonDecode(prefs.getString(_splitBillsKey) ?? '[]'),
+      'geminiApiKey': prefs.getString(_geminiApiKeyKey) ?? '',
       'quickNote': prefs.getString(_quickNoteKey) ?? '',
       'calorieGoal': prefs.getInt(_calorieGoalKey) ?? 2100,
     };
@@ -430,6 +469,12 @@ class StorageService {
       }
       if (parsed.containsKey('shortcuts')) {
         await prefs.setString(_shortcutsKey, jsonEncode(parsed['shortcuts']));
+      }
+      if (parsed.containsKey('splitBills')) {
+        await prefs.setString(_splitBillsKey, jsonEncode(parsed['splitBills']));
+      }
+      if (parsed.containsKey('geminiApiKey')) {
+        await prefs.setString(_geminiApiKeyKey, parsed['geminiApiKey'] as String);
       }
       return true;
     } catch (_) {
