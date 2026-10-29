@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +10,7 @@ import '../models/split_bill_model.dart';
 import '../services/gemini_receipt_service.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
+import '../theme/apple_theme.dart';
 
 class SplitBillScreen extends StatefulWidget {
   final DashboardState state;
@@ -540,55 +542,69 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
   Widget build(BuildContext context) {
     final isDark = widget.state.isDarkMode;
 
-    return CupertinoPageScaffold(
-      backgroundColor: AppleColors.bg(isDark),
-      navigationBar: CupertinoNavigationBar(
-        backgroundColor: AppleColors.card(isDark).withValues(alpha: 0.85),
-        border: Border(bottom: BorderSide(color: AppleColors.separator(isDark))),
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.of(context).pop(),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(CupertinoIcons.chevron_back, color: AppleColors.systemBlue, size: 22),
-              const Text('Kembali', style: TextStyle(color: AppleColors.systemBlue, fontSize: 16)),
-            ],
-          ),
-        ),
-        middle: Text(
-          'Split Bill ala GoPay',
+    return CupertinoTheme(
+      data: AppleTheme.cupertinoTheme(isDark),
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
           style: TextStyle(
+            decoration: TextDecoration.none,
+            fontFamily: GoogleFonts.inter().fontFamily,
             color: AppleColors.textPrimary(isDark),
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
+            fontSize: 14,
           ),
-        ),
-        trailing: _currentStep == 2
-            ? CupertinoButton(
+          child: CupertinoPageScaffold(
+            backgroundColor: AppleColors.bg(isDark),
+            navigationBar: CupertinoNavigationBar(
+              backgroundColor: AppleColors.card(isDark).withValues(alpha: 0.85),
+              border: Border(bottom: BorderSide(color: AppleColors.separator(isDark))),
+              leading: CupertinoButton(
                 padding: EdgeInsets.zero,
-                child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
-                onPressed: () async {
-                  final nav = Navigator.of(context);
-                  final session = _buildCurrentSession();
-                  await widget.state.saveSplitBillSession(session);
-                  if (!mounted) return;
-                  nav.pop();
-                },
-              )
-            : null,
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Stepper Navigation
-            _buildStepperHeader(isDark),
-
-            // Step Content
-            Expanded(
-              child: _buildCurrentStepContent(isDark),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.chevron_back, color: AppleColors.systemBlue, size: 22),
+                    const Text('Kembali', style: TextStyle(color: AppleColors.systemBlue, fontSize: 16)),
+                  ],
+                ),
+              ),
+              middle: Text(
+                'Split Bill ala GoPay',
+                style: TextStyle(
+                  color: AppleColors.textPrimary(isDark),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                ),
+              ),
+              trailing: _currentStep == 2
+                  ? CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                      onPressed: () async {
+                        final nav = Navigator.of(context);
+                        final session = _buildCurrentSession();
+                        await widget.state.saveSplitBillSession(session);
+                        if (!mounted) return;
+                        nav.pop();
+                      },
+                    )
+                  : null,
             ),
-          ],
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Stepper Navigation
+                  _buildStepperHeader(isDark),
+
+                  // Step Content
+                  Expanded(
+                    child: _buildCurrentStepContent(isDark),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

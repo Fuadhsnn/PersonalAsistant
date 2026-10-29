@@ -4,10 +4,11 @@ import 'package:http/http.dart' as http;
 
 class GeminiReceiptService {
   static const List<String> _candidateModels = [
+    'gemini-3.1-flash-lite',
     'gemini-3.5-flash',
+    'gemini-3-flash-preview',
     'gemini-3.8-flash',
-    'gemini-2.5-flash',
-    'gemini-1.5-flash',
+    'gemini-3.5-flash-lite',
   ];
 
   static const String _systemPrompt = '''
@@ -88,34 +89,48 @@ Jika ada nilai yang tidak ditemukan di struk, isi dengan 0.
           final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
           final candidates = jsonResponse['candidates'] as List<dynamic>?;
           if (candidates == null || candidates.isEmpty) {
-            throw Exception('Gemini tidak memberikan respon ekstraksi.');
+            lastError = 'Gemini ($model) tidak memberikan kandidat respon.';
+            continue;
           }
 
           final candidate = candidates[0] as Map<String, dynamic>;
           final content = candidate['content'] as Map<String, dynamic>?;
           final parts = content?['parts'] as List<dynamic>?;
           if (parts == null || parts.isEmpty) {
-            throw Exception('Tidak ada teks hasil ekstraksi struk dari Gemini.');
+            lastError = 'Tidak ada teks hasil ekstraksi struk dari Gemini ($model).';
+            continue;
           }
 
           final rawText = parts[0]['text'] as String? ?? '';
           return _cleanAndParseJson(rawText);
-        } else if (response.statusCode == 404) {
-          // Model not found or deprecated, try next model in candidate list
-          lastError = 'Model $model tidak tersedia (404).';
+        } else if (response.statusCode == 503 ||
+            response.statusCode == 429 ||
+            response.statusCode == 404 ||
+            response.statusCode == 500) {
+          // Model high demand (503), rate limit (429), or deprecated (404).
+          // Failover to next candidate model!
+          lastError = 'Model $model status (${response.statusCode})';
+          await Future.delayed(const Duration(milliseconds: 300));
           continue;
         } else {
-          final errJson = jsonDecode(response.body);
-          final errMsg = errJson['error']?['message'] ?? response.body;
-          throw Exception('Gemini API Error (${response.statusCode}): $errMsg');
+          try {
+            final errJson = jsonDecode(response.body);
+            final errMsg = errJson['error']?['message'] ?? response.body;
+            lastError = 'Gemini ($model, ${response.statusCode}): $errMsg';
+          } catch (_) {
+            lastError = 'Gemini API Error (${response.statusCode}): ${response.reasonPhrase}';
+          }
+          continue;
         }
       } catch (e) {
-        if (e is Exception && e.toString().contains('Gemini API Error')) rethrow;
         lastError = e.toString();
+        continue;
       }
     }
 
-    throw Exception('Gagal mengekstrak struk: $lastError');
+    throw Exception(
+      'Semua model Gemini sedang sibuk atau mengalami kendala: $lastError. Silakan coba beberapa saat lagi.',
+    );
   }
 
   Map<String, dynamic> _cleanAndParseJson(String rawText) {
