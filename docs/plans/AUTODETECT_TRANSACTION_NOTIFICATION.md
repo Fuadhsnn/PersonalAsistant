@@ -81,3 +81,4 @@ Untuk mengatasi batasan di atas tanpa harus membuat aplikasi native yang rumit, 
 2. [ ] **Tahap 2:** Implementasikan parser teks (regex + Gemini fallback) untuk mengonversi teks mentah menjadi objek JSON `FinanceTransaction`.
 3. [ ] **Tahap 3:** Buat integrasi penyimpanan awan sederhana (misal: Supabase / Firebase / Vercel KV) agar data yang dikirim oleh iPhone Shortcuts bisa diunduh oleh web Flutter.
 4. [ ] **Tahap 4:** Sediakan panduan langkah demi langkah (*tutorial*) di aplikasi untuk menyetel Apple Shortcuts di iPhone pengguna.
+

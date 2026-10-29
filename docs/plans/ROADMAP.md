@@ -9,8 +9,9 @@ Dokumen ini berfungsi sebagai wadah penampung (*backlog*) untuk rencana fitur-fi
 | No | Nama Fitur | Kategori | Prioritas | Status | Dokumen Rinci |
 | :---: | :--- | :--- | :---: | :---: | :---: |
 | 1 | **Deteksi Otomatis Mutasi Bank (Notifikasi)** | Keuangan | Tinggi | *On Hold (Backlog)* | [Lihat Spesifikasi](./AUTODETECT_TRANSACTION_NOTIFICATION.md) |
-| 2 | **Export Laporan Keuangan (PDF / Excel)** | Keuangan | Sedang | *Draft Idea* | - |
-| 3 | **Smart Habit Reminder (Web Push Notification)** | Kebiasaan | Sedang | *Draft Idea* | - |
+| 2 | **Integrasi Google Calendar (Two-Way Sync & Widget Beranda)** | Kalender & Produktivitas | Tinggi | *On Hold (Backlog)* | [Lihat Spesifikasi](./GOOGLE_CALENDAR_INTEGRATION.md) |
+| 3 | **Export Laporan Keuangan (PDF / Excel)** | Keuangan | Sedang | *Draft Idea* | - |
+| 4 | **Smart Habit Reminder (Web Push Notification)** | Kebiasaan | Sedang | *Draft Idea* | - |
 
 ---
 
