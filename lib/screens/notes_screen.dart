@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
-import '../widgets/apple_burger_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 
 class NotesScreen extends StatefulWidget {
   final DashboardState state;
@@ -64,105 +64,19 @@ class _NotesScreenState extends State<NotesScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 40),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Top Bar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: widget.onOpenDrawer,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppleColors.card(isDark),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: isDark ? const Color(0x22000000) : const Color(0x0A000000),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: AppleBurgerIcon(
-                              color: AppleColors.textPrimary(isDark),
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: widget.onBackToHome,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppleColors.card(isDark),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(CupertinoIcons.chevron_back, size: 16, color: AppleColors.systemBlue),
-                              SizedBox(width: 2),
-                              Text(
-                                'Beranda',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppleColors.systemBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+              // Top Bar (Option A: Unified Modern Tactile HIG)
+              TactileTopBar(
+                title: 'Catatan Cepat',
+                onOpenDrawer: widget.onOpenDrawer,
+                isDark: isDark,
+                rightAction: TactileTopBar.actionButton(
+                  icon: const Icon(
+                    CupertinoIcons.doc_on_clipboard,
+                    size: 19,
+                    color: AppleColors.systemYellow,
                   ),
-
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: _copyToClipboard,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppleColors.card(isDark),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.doc_on_clipboard,
-                        size: 19,
-                        color: AppleColors.systemYellow,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              Text(
-                'Catatan Cepat',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
-                  color: AppleColors.textPrimary(isDark),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tersimpan otomatis ke memori lokal iPhone Anda.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppleColors.textSecondary(isDark),
+                  onPressed: _copyToClipboard,
+                  isDark: isDark,
                 ),
               ),
               const SizedBox(height: 16),

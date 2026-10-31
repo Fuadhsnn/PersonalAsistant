@@ -9,6 +9,7 @@ import '../theme/apple_colors.dart';
 import '../widgets/activity_rings_card.dart';
 import '../widgets/apple_burger_icon.dart';
 import '../widgets/apple_note_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   final DashboardState state;
@@ -60,82 +61,19 @@ class HomeScreen extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Top Bar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: onOpenDrawer,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppleColors.card(isDark),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? const Color(0x22000000) : const Color(0x0A000000),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: AppleBurgerIcon(
-                          color: AppleColors.textPrimary(isDark),
-                          size: 18,
-                        ),
-                      ),
-                    ),
+              TactileTopBar(
+                title: 'ARIES • LIFE OS',
+                onOpenDrawer: onOpenDrawer,
+                isDark: isDark,
+                rightAction: TactileTopBar.actionButton(
+                  icon: Icon(
+                    CupertinoIcons.gear_alt_fill,
+                    size: 19,
+                    color: AppleColors.textPrimary(isDark),
                   ),
-
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.apple,
-                        size: 18,
-                        color: AppleColors.textPrimary(isDark),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'ARIES • LIFE OS',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.0,
-                          color: AppleColors.textSecondary(isDark),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: onOpenSettings,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppleColors.card(isDark),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark ? const Color(0x22000000) : const Color(0x0A000000),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        CupertinoIcons.gear_alt_fill,
-                        size: 19,
-                        color: AppleColors.textPrimary(isDark),
-                      ),
-                    ),
-                  ),
-                ],
+                  onPressed: onOpenSettings,
+                  isDark: isDark,
+                ),
               ),
               const SizedBox(height: 16),
 

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/calorie_habit_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
-import '../widgets/apple_burger_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 
 class CalorieHabitScreen extends StatefulWidget {
   final DashboardState state;
@@ -119,105 +119,23 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
         CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
-            // Navigation Bar
+            // Navigation Bar (Option A: Unified Modern Tactile HIG)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: Row(
-                  children: [
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 36,
-                      onPressed: widget.onBackToHome,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            CupertinoIcons.chevron_back,
-                            size: 22,
-                            color: AppleColors.systemBlue,
-                          ),
-                          Text(
-                            'Beranda',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppleColors.systemBlue,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: TactileTopBar(
+                  title: 'Kalori & Kebiasaan',
+                  onOpenDrawer: widget.onOpenDrawer,
+                  isDark: isDark,
+                  rightAction: TactileTopBar.actionButton(
+                    icon: const Icon(
+                      CupertinoIcons.plus,
+                      size: 20,
+                      color: AppleColors.systemOrange,
                     ),
-                    const Spacer(),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 36,
-                      onPressed: widget.onOpenDrawer,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppleColors.cardBg(isDark),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppleColors.separator(isDark)),
-                        ),
-                        alignment: Alignment.center,
-                        child: AppleBurgerIcon(
-                          size: 18,
-                          color: isDark ? CupertinoColors.white : CupertinoColors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 36,
-                      onPressed: () => _openManualCalorieSheet(context),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          color: AppleColors.systemOrange,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          CupertinoIcons.plus,
-                          size: 20,
-                          color: CupertinoColors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Header Title
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Kalori & Kebiasaan',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        color: AppleColors.label(isDark),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Target asupan harian, preset makanan nusantara, & rutinitas harian',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppleColors.secondaryLabel(isDark),
-                      ),
-                    ),
-                  ],
+                    onPressed: () => _openManualCalorieSheet(context),
+                    isDark: isDark,
+                  ),
                 ),
               ),
             ),

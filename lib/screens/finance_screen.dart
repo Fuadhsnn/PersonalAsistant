@@ -5,7 +5,7 @@ import '../models/finance_item.dart';
 import '../models/split_bill_model.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
-import '../widgets/apple_burger_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 import 'split_bill_screen.dart';
 
 class FinanceScreen extends StatelessWidget {
@@ -175,105 +175,23 @@ class FinanceScreen extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        // Navigation Bar
+        // Navigation Bar (Option A: Unified Modern Tactile HIG)
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Row(
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minSize: 36,
-                  onPressed: onBackToHome,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        CupertinoIcons.chevron_back,
-                        size: 22,
-                        color: AppleColors.systemBlue,
-                      ),
-                      Text(
-                        'Beranda',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppleColors.systemBlue,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: TactileTopBar(
+              title: 'Keuangan & Runway',
+              onOpenDrawer: onOpenDrawer,
+              isDark: isDark,
+              rightAction: TactileTopBar.actionButton(
+                icon: const Icon(
+                  CupertinoIcons.plus,
+                  size: 20,
+                  color: AppleColors.systemBlue,
                 ),
-                const Spacer(),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minSize: 36,
-                  onPressed: onOpenDrawer,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppleColors.cardBg(isDark),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppleColors.separator(isDark)),
-                    ),
-                    alignment: Alignment.center,
-                    child: AppleBurgerIcon(
-                      size: 18,
-                      color: isDark ? CupertinoColors.white : CupertinoColors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minSize: 36,
-                  onPressed: () => _openAddTransactionSheet(context),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: AppleColors.systemGreen,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      CupertinoIcons.plus,
-                      size: 20,
-                      color: CupertinoColors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Screen Title
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Keuangan & Runway',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: AppleColors.label(isDark),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Odometer dana darurat, runway job hunting, & alokasi wishlist',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppleColors.secondaryLabel(isDark),
-                  ),
-                ),
-              ],
+                onPressed: () => _openAddTransactionSheet(context),
+                isDark: isDark,
+              ),
             ),
           ),
         ),

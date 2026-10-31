@@ -11,6 +11,7 @@ import '../services/gemini_receipt_service.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../theme/apple_theme.dart';
+import '../widgets/tactile_top_bar.dart';
 
 class SplitBillScreen extends StatefulWidget {
   final DashboardState state;
@@ -555,55 +556,45 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
           ),
           child: CupertinoPageScaffold(
             backgroundColor: AppleColors.bg(isDark),
-            navigationBar: CupertinoNavigationBar(
-              backgroundColor: AppleColors.card(isDark).withValues(alpha: 0.85),
-              border: Border(bottom: BorderSide(color: AppleColors.separator(isDark))),
-              leading: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  if (Navigator.of(context).canPop()) {
-                    if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              widget.state.setFeature(AppFeature.finance);
-            }
-                  } else {
-                    widget.state.setFeature(AppFeature.finance);
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.chevron_back, color: AppleColors.systemBlue, size: 22),
-                    const Text('Kembali', style: TextStyle(color: AppleColors.systemBlue, fontSize: 16)),
-                  ],
-                ),
-              ),
-              middle: Text(
-                'Split Bill ala GoPay',
-                style: TextStyle(
-                  color: AppleColors.textPrimary(isDark),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 17,
-                ),
-              ),
-              trailing: _currentStep == 2
-                  ? CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
-                      onPressed: () async {
-                        final nav = Navigator.of(context);
-                        final session = _buildCurrentSession();
-                        await widget.state.saveSplitBillSession(session);
-                        if (!mounted) return;
-                        nav.pop();
-                      },
-                    )
-                  : null,
-            ),
             child: SafeArea(
               child: Column(
                 children: [
+                  // Navigation Bar (Option A: Unified Modern Tactile HIG)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: TactileTopBar(
+                      title: 'Split Bill ala GoPay',
+                      isDark: isDark,
+                      leading: TactileTopBar.backButton(
+                        onPressed: () {
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          } else {
+                            widget.state.setFeature(AppFeature.finance);
+                          }
+                        },
+                        isDark: isDark,
+                      ),
+                      rightAction: _currentStep == 2
+                          ? TactileTopBar.actionButton(
+                              icon: const Icon(
+                                CupertinoIcons.checkmark_alt,
+                                size: 20,
+                                color: AppleColors.systemGreen,
+                              ),
+                              onPressed: () async {
+                                final nav = Navigator.of(context);
+                                final session = _buildCurrentSession();
+                                await widget.state.saveSplitBillSession(session);
+                                if (!mounted) return;
+                                nav.pop();
+                              },
+                              isDark: isDark,
+                            )
+                          : null,
+                    ),
+                  ),
+
                   // Stepper Navigation
                   _buildStepperHeader(isDark),
 

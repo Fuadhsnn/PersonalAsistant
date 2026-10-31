@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import '../models/task_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
-import '../widgets/apple_burger_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 import '../widgets/category_pills.dart';
 import '../widgets/empty_tasks_view.dart';
 import '../widgets/reminder_summary_grid.dart';
@@ -34,109 +34,22 @@ class TodoScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Top Bar with Burger Menu, Back to Home, and Add Button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: onOpenDrawer,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppleColors.card(isDark),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: isDark ? const Color(0x22000000) : const Color(0x0A000000),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: AppleBurgerIcon(
-                              color: AppleColors.textPrimary(isDark),
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        onPressed: onBackToHome,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppleColors.card(isDark),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(CupertinoIcons.chevron_back, size: 16, color: AppleColors.systemBlue),
-                              SizedBox(width: 2),
-                              Text(
-                                'Beranda',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppleColors.systemBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+              // Top Bar (Option A: Unified Modern Tactile HIG)
+              TactileTopBar(
+                title: 'To-Do & Pengingat',
+                onOpenDrawer: onOpenDrawer,
+                isDark: isDark,
+                rightAction: TactileTopBar.actionButton(
+                  icon: const Icon(
+                    CupertinoIcons.plus,
+                    size: 20,
+                    color: AppleColors.systemBlue,
                   ),
-
-                  // Add Task (+) button
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    onPressed: () => onOpenAddTask(null),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: AppleColors.systemBlue,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0x40007AFF),
-                            blurRadius: 10,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.plus,
-                        size: 22,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Screen Title
-              Text(
-                'To-Do & Pengingat',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
-                  color: AppleColors.textPrimary(isDark),
+                  onPressed: () => onOpenAddTask(null),
+                  isDark: isDark,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
 
               // Search Box
               CupertinoSearchTextField(

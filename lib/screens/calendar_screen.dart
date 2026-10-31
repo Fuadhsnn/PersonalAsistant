@@ -7,7 +7,7 @@ import '../models/calendar_event_item.dart';
 import '../state/dashboard_state.dart';
 import '../theme/apple_colors.dart';
 import '../theme/apple_theme.dart';
-import '../widgets/apple_burger_icon.dart';
+import '../widgets/tactile_top_bar.dart';
 
 class CalendarScreen extends StatefulWidget {
   final DashboardState state;
@@ -212,80 +212,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildTopBar(bool isDark) {
     final isSynced = widget.state.isGoogleCalendarSynced;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          onPressed: widget.onOpenDrawer,
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppleColors.card(isDark),
-              shape: BoxShape.circle,
-              border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
-            ),
-            child: Center(
-              child: AppleBurgerIcon(
-                color: AppleColors.textPrimary(isDark),
-                size: 18,
+    return TactileTopBar(
+      title: 'Kalender & Jadwal',
+      onOpenDrawer: widget.onOpenDrawer,
+      isDark: isDark,
+      rightAction: CupertinoButton(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        onPressed: () {
+          widget.state.toggleGoogleCalendarSync();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppleColors.card(isDark),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Google',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppleColors.textPrimary(isDark),
+                  decoration: TextDecoration.none,
+                ),
               ),
-            ),
-          ),
-        ),
-
-        Text(
-          'Kalender & Jadwal',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.4,
-            color: AppleColors.textPrimary(isDark),
-            decoration: TextDecoration.none,
-          ),
-        ),
-
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          onPressed: () {
-            widget.state.toggleGoogleCalendarSync();
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppleColors.card(isDark),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Google',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppleColors.textPrimary(isDark),
-                    decoration: TextDecoration.none,
-                  ),
+              const SizedBox(width: 5),
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: isSynced ? AppleColors.systemGreen : AppleColors.textSecondary(isDark),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 5),
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: isSynced ? AppleColors.systemGreen : AppleColors.textSecondary(isDark),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
