@@ -224,6 +224,34 @@ class AppleDrawer extends StatelessWidget {
                     isDark: isDark,
                   ),
 
+                  // 9. Kalender & Jadwal
+                  _DrawerItem(
+                    icon: Icons.calendar_month_rounded,
+                    iconColor: AppleColors.systemRed,
+                    label: 'Kalender & Jadwal',
+                    badgeText: state.todayEvents.isNotEmpty ? '${state.todayEvents.length} Hari Ini' : null,
+                    badgeColor: AppleColors.systemRed,
+                    isSelected: currentFeature == AppFeature.calendar,
+                    onTap: () {
+                      state.setFeature(AppFeature.calendar);
+                      Navigator.of(context).pop();
+                    },
+                    isDark: isDark,
+                  ),
+
+                  // 10. Split Bill Scanner AI
+                  _DrawerItem(
+                    icon: Icons.receipt_long_rounded,
+                    iconColor: AppleColors.electricBlue,
+                    label: 'Split Bill Scanner AI',
+                    isSelected: currentFeature == AppFeature.splitBill,
+                    onTap: () {
+                      state.setFeature(AppFeature.splitBill);
+                      Navigator.of(context).pop();
+                    },
+                    isDark: isDark,
+                  ),
+
                   const SizedBox(height: 8),
                   Container(
                     height: 1,

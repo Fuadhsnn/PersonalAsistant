@@ -560,7 +560,17 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
               border: Border(bottom: BorderSide(color: AppleColors.separator(isDark))),
               leading: CupertinoButton(
                 padding: EdgeInsets.zero,
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              widget.state.setFeature(AppFeature.finance);
+            }
+                  } else {
+                    widget.state.setFeature(AppFeature.finance);
+                  }
+                },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1982,7 +1992,11 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
           onPressed: () async {
             await widget.state.saveSplitBillSession(session);
             if (!mounted) return;
-            Navigator.of(context).pop();
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              widget.state.setFeature(AppFeature.finance);
+            }
           },
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,

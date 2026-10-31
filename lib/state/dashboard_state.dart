@@ -6,8 +6,10 @@ import '../models/running_shoe_item.dart';
 import '../models/finance_item.dart';
 import '../models/shortcut_item.dart';
 import '../models/split_bill_model.dart';
+import '../models/calendar_event_item.dart';
 import '../services/storage_service.dart';
 import '../services/strava_service.dart';
+import '../services/google_calendar_service.dart';
 
 enum AppFeature {
   home,
@@ -17,7 +19,9 @@ enum AppFeature {
   calories,
   finance,
   quickLinks,
-  notes;
+  notes,
+  splitBill,
+  calendar;
 
   String get title {
     switch (this) {
@@ -37,6 +41,10 @@ enum AppFeature {
         return 'Pintasan Safari';
       case AppFeature.notes:
         return 'Catatan Cepat';
+      case AppFeature.splitBill:
+        return 'Split Bill Scanner AI';
+      case AppFeature.calendar:
+        return 'Kalender & Jadwal';
     }
   }
 }
@@ -95,6 +103,11 @@ class DashboardState extends ChangeNotifier {
 
   // Shortcuts State
   List<ShortcutItem> _shortcuts = [];
+
+  // Calendar State
+  List<CalendarEventItem> _calendarEvents = [];
+  bool _isGoogleCalendarSynced = true;
+  final GoogleCalendarService _googleCalendarService = GoogleCalendarService();
 
   // Strava State
   final StravaService _stravaService = StravaService();
@@ -156,6 +169,46 @@ class DashboardState extends ChangeNotifier {
   // Shortcuts
   List<ShortcutItem> get shortcuts => _shortcuts;
 
+  // Calendar
+  List<CalendarEventItem> get calendarEvents {
+    final list = List<CalendarEventItem>.from(_calendarEvents);
+    list.sort((a, b) => a.startTime.compareTo(b.startTime));
+    return list;
+  }
+
+  bool get isGoogleCalendarSynced => _isGoogleCalendarSynced;
+
+  List<CalendarEventItem> get todayEvents {
+    final now = DateTime.now();
+    return calendarEvents.where((e) {
+      return e.startTime.year == now.year &&
+          e.startTime.month == now.month &&
+          e.startTime.day == now.day;
+    }).toList();
+  }
+
+  List<CalendarEventItem> get tomorrowEvents {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    return calendarEvents.where((e) {
+      return e.startTime.year == tomorrow.year &&
+          e.startTime.month == tomorrow.month &&
+          e.startTime.day == tomorrow.day;
+    }).toList();
+  }
+
+  List<CalendarEventItem> get upcomingMilestones {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final milestones = calendarEvents.where((e) {
+      if (!e.isMilestone) return false;
+      final eventDay = DateTime(e.startTime.year, e.startTime.month, e.startTime.day);
+      final diff = eventDay.difference(today).inDays;
+      return diff >= 0 && diff <= 7;
+    }).toList();
+    milestones.sort((a, b) => a.startTime.compareTo(b.startTime));
+    return milestones;
+  }
+
   // --- Initialization ---
   Future<void> _init() async {
     _isLoading = true;
@@ -172,6 +225,8 @@ class DashboardState extends ChangeNotifier {
     _wishlists = await _storageService.loadWishlists();
     _shortcuts = await _storageService.loadShortcuts();
     _splitBills = await _storageService.loadSplitBills();
+    _calendarEvents = await _storageService.loadCalendarEvents();
+    _isGoogleCalendarSynced = await _storageService.loadIsGoogleCalendarSynced();
     _geminiApiKey = await _storageService.loadGeminiApiKey();
     _calorieGoal = await _storageService.loadCalorieGoal();
     _walletStartingBalance = await _storageService.loadWalletStartingBalance();
@@ -819,6 +874,47 @@ class DashboardState extends ChangeNotifier {
     _shortcuts.removeWhere((s) => s.id == id);
     notifyListeners();
     await _storageService.saveShortcuts(_shortcuts);
+  }
+
+  // ==========================================
+  // --- MODULE 7: GOOGLE CALENDAR & SCHEDULE ---
+  // ==========================================
+  Future<void> addCalendarEvent(CalendarEventItem event) async {
+    _calendarEvents.add(event);
+    notifyListeners();
+    await _storageService.saveCalendarEvents(_calendarEvents);
+  }
+
+  Future<void> updateCalendarEvent(CalendarEventItem event) async {
+    final idx = _calendarEvents.indexWhere((e) => e.id == event.id);
+    if (idx != -1) {
+      _calendarEvents[idx] = event;
+      notifyListeners();
+      await _storageService.saveCalendarEvents(_calendarEvents);
+    }
+  }
+
+  Future<void> deleteCalendarEvent(String id) async {
+    _calendarEvents.removeWhere((e) => e.id == id);
+    notifyListeners();
+    await _storageService.saveCalendarEvents(_calendarEvents);
+  }
+
+  Future<void> toggleGoogleCalendarSync() async {
+    _isGoogleCalendarSynced = !_isGoogleCalendarSynced;
+    notifyListeners();
+    await _storageService.saveIsGoogleCalendarSynced(_isGoogleCalendarSynced);
+  }
+
+  Future<CalendarEventItem?> createEventFromNaturalLanguage(String text) async {
+    final event = await _googleCalendarService.parseNaturalLanguageEvent(
+      prompt: text,
+      apiKey: _geminiApiKey,
+    );
+    if (event != null) {
+      await addCalendarEvent(event);
+    }
+    return event;
   }
 
   // ==========================================

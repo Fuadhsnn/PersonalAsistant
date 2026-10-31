@@ -10,12 +10,15 @@ import 'screens/notes_screen.dart';
 import 'screens/quick_links_screen.dart';
 import 'screens/running_screen.dart';
 import 'screens/todo_screen.dart';
+import 'screens/calendar_screen.dart';
+import 'screens/split_bill_screen.dart';
 import 'state/dashboard_state.dart';
 import 'theme/apple_colors.dart';
 import 'theme/apple_theme.dart';
 import 'widgets/add_task_sheet.dart';
 import 'widgets/apple_drawer.dart';
 import 'widgets/settings_sheet.dart';
+import 'widgets/floating_island_tab_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -152,6 +155,18 @@ class _MainAppShellState extends State<MainAppShell> {
           onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
           onBackToHome: () => widget.state.setFeature(AppFeature.home),
         );
+
+      case AppFeature.calendar:
+        return CalendarScreen(
+          state: widget.state,
+          onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+          onBackToHome: () => widget.state.setFeature(AppFeature.home),
+        );
+
+      case AppFeature.splitBill:
+        return SplitBillScreen(
+          state: widget.state,
+        );
     }
   }
 
@@ -168,18 +183,40 @@ class _MainAppShellState extends State<MainAppShell> {
       ),
       body: SafeArea(
         top: true,
-        bottom: true,
+        bottom: false,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
             child: widget.state.isLoading
                 ? const Center(child: CupertinoActivityIndicator())
-                : AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    child: KeyedSubtree(
-                      key: ValueKey(widget.state.currentFeature),
-                      child: _buildActiveFeatureView(),
-                    ),
+                : Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      // Active Screen View
+                      Positioned.fill(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: KeyedSubtree(
+                            key: ValueKey(widget.state.currentFeature),
+                            child: _buildActiveFeatureView(),
+                          ),
+                        ),
+                      ),
+
+                      // Floating Island Capsule Tab Bar
+                      Positioned(
+                        bottom: 18,
+                        child: SafeArea(
+                          top: false,
+                          child: FloatingIslandTabBar(
+                            state: widget.state,
+                            onTabSelected: (feature) {
+                              widget.state.setFeature(feature);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
           ),
         ),

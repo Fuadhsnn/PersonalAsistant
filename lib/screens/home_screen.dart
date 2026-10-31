@@ -232,7 +232,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              // Google Calendar Agenda Widget (Hari H & H-1)
+              _buildCalendarAgendaWidget(context, isDark),
+              const SizedBox(height: 12),
+
+              // Milestone H-7 Countdown Card
+              if (state.upcomingMilestones.isNotEmpty) ...[
+                _buildMilestoneBanner(context, state.upcomingMilestones.first, isDark),
+                const SizedBox(height: 20),
+              ] else
+                const SizedBox(height: 12),
 
               // Safari Favorites Horizontal Bar
               Row(
@@ -371,6 +382,32 @@ class HomeScreen extends StatelessWidget {
                       iconBg: AppleColors.systemYellow,
                       isDark: isDark,
                       onTap: () => state.setFeature(AppFeature.notes),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _LaunchpadTile(
+                      title: 'Kalender & Jadwal',
+                      subtitle: 'Two-way sync & Meet',
+                      icon: Icons.calendar_month_rounded,
+                      iconBg: AppleColors.systemRed,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.calendar),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _LaunchpadTile(
+                      title: 'Split Bill AI',
+                      subtitle: 'OCR struk Gemini AI',
+                      icon: Icons.receipt_long_rounded,
+                      iconBg: AppleColors.electricBlue,
+                      isDark: isDark,
+                      onTap: () => state.setFeature(AppFeature.splitBill),
                     ),
                   ),
                 ],
@@ -614,6 +651,211 @@ class HomeScreen extends StatelessWidget {
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: AppleColors.label(isDark),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalendarAgendaWidget(BuildContext context, bool isDark) {
+    final todayEvents = state.todayEvents;
+    final now = DateTime.now();
+    final monthStr = DateFormat('MMM', 'id_ID').format(now).toUpperCase();
+    final dayStr = '${now.day}';
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => state.setFeature(AppFeature.calendar),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppleColors.card(isDark),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? const Color(0x22000000) : const Color(0x06000000),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Date Badge Block
+            Container(
+              width: 48,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppleColors.cardInset(isDark),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    monthStr,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppleColors.systemRed,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  Text(
+                    dayStr,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppleColors.textPrimary(isDark),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // Agenda Details
+            Expanded(
+              child: todayEvents.isNotEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          todayEvents.first.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppleColors.textPrimary(isDark),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Text(
+                              todayEvents.first.formattedTimeRange,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppleColors.textSecondary(isDark),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            if (todayEvents.first.meetLink != null &&
+                                todayEvents.first.meetLink!.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              const Text(
+                                '• Google Meet',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppleColors.electricBlue,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Belum ada jadwal hari ini',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppleColors.textPrimary(isDark),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Buka Kalender untuk menambah acara baru.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppleColors.textSecondary(isDark),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+
+            Icon(
+              CupertinoIcons.chevron_forward,
+              size: 14,
+              color: AppleColors.textSecondary(isDark),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMilestoneBanner(BuildContext context, dynamic milestone, bool isDark) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => state.setFeature(AppFeature.calendar),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppleColors.card(isDark),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: AppleColors.systemRed.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${milestone.title} • ${milestone.daysUntil} Hari Lagi',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppleColors.textPrimary(isDark),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${DateFormat('d MMM yyyy • HH:mm', 'id_ID').format(milestone.startTime)} WIB',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppleColors.textSecondary(isDark),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppleColors.systemRed,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                milestone.milestoneBadge,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: CupertinoColors.white,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
           ],
