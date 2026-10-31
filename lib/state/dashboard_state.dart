@@ -900,6 +900,12 @@ class DashboardState extends ChangeNotifier {
     await _storageService.saveCalendarEvents(_calendarEvents);
   }
 
+  Future<void> clearAllCalendarEvents() async {
+    _calendarEvents.clear();
+    notifyListeners();
+    await _storageService.saveCalendarEvents(_calendarEvents);
+  }
+
   Future<void> toggleGoogleCalendarSync() async {
     _isGoogleCalendarSynced = !_isGoogleCalendarSynced;
     notifyListeners();

@@ -362,18 +362,30 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_calendarEventsKey);
     if (jsonString == null || jsonString.isEmpty) {
-      final defaultEvents = _generateDefaultCalendarEvents();
-      await saveCalendarEvents(defaultEvents);
-      return defaultEvents;
+      await saveCalendarEvents([]);
+      return [];
     }
 
     try {
       final List<dynamic> decoded = jsonDecode(jsonString) as List<dynamic>;
-      return decoded
+      final list = decoded
           .map((item) => CalendarEventItem.fromJson(item as Map<String, dynamic>))
+          .where((item) =>
+              item.id != 'cal_1' &&
+              item.id != 'cal_2' &&
+              item.id != 'cal_3' &&
+              item.id != 'cal_milestone_1' &&
+              item.id != 'cal_milestone_2')
           .toList();
+
+      // If any dummy items were present, update saved storage cleanly
+      if (list.length != decoded.length) {
+        await saveCalendarEvents(list);
+      }
+      return list;
     } catch (_) {
-      return _generateDefaultCalendarEvents();
+      await saveCalendarEvents([]);
+      return [];
     }
   }
 
@@ -391,71 +403,6 @@ class StorageService {
   Future<void> saveIsGoogleCalendarSynced(bool synced) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_googleCalendarSyncKey, synced);
-  }
-
-  List<CalendarEventItem> _generateDefaultCalendarEvents() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    return [
-      CalendarEventItem(
-        id: 'cal_1',
-        title: 'Sprint Planning & Demo ARIES V2',
-        description: 'Review fitur Google Calendar Two-Way Sync, Split Bill AI, dan iOS HIG.',
-        startTime: today.add(const Duration(hours: 9, minutes: 30)),
-        endTime: today.add(const Duration(hours: 10, minutes: 30)),
-        location: 'Google Meet',
-        meetLink: 'https://meet.google.com/abc-xyz',
-        category: 'Teknologi',
-        colorHex: '0xFF00A3FF',
-        isMilestone: false,
-      ),
-      CalendarEventItem(
-        id: 'cal_2',
-        title: 'Technical Mock: Flutter & iOS HIG',
-        description: 'Simulasi interview teknik arsitektur state management dan Cupertino rendering.',
-        startTime: today.add(const Duration(hours: 14, minutes: 0)),
-        endTime: today.add(const Duration(hours: 15, minutes: 0)),
-        location: 'Zoom Meeting • ID: 894 284',
-        meetLink: 'https://zoom.us/j/894284',
-        category: 'Karir',
-        colorHex: '0xFFFC4C02',
-        isMilestone: false,
-      ),
-      CalendarEventItem(
-        id: 'cal_3',
-        title: 'Review Belanja & Split Bill Resto',
-        description: 'Verifikasi hasil ekstraksi OCR Gemini Vision dan pembagian struk per orang.',
-        startTime: today.add(const Duration(hours: 17, minutes: 0)),
-        endTime: today.add(const Duration(hours: 18, minutes: 0)),
-        location: 'Rumah • Catatan Struk OCR',
-        category: 'Finansial',
-        colorHex: '0xFF34C759',
-        isMilestone: false,
-      ),
-      CalendarEventItem(
-        id: 'cal_milestone_1',
-        title: 'Penerbangan ke Bali (Garuda GA-402)',
-        description: 'Tiket penerbangan CGK -> DPS Terminal 3. Siapkan barcode boarding pass.',
-        startTime: today.add(const Duration(days: 3, hours: 8, minutes: 30)),
-        endTime: today.add(const Duration(days: 3, hours: 11, minutes: 20)),
-        location: 'Bandara Soekarno-Hatta Terminal 3',
-        category: 'Pribadi',
-        colorHex: '0xFFFF3B30',
-        isMilestone: true,
-      ),
-      CalendarEventItem(
-        id: 'cal_milestone_2',
-        title: 'Sidang Proposal Skripsi',
-        description: 'Presentasi arsitektur sistem personal assistant cerdas berbasis edge & cloud LLM.',
-        startTime: today.add(const Duration(days: 6, hours: 10, minutes: 0)),
-        endTime: today.add(const Duration(days: 6, hours: 12, minutes: 0)),
-        location: 'Ruang Sidang Utama Fasilkom Lt. 2',
-        category: 'Akademik',
-        colorHex: '0xFF5856D6',
-        isMilestone: true,
-      ),
-    ];
   }
 
   // --- Calorie Goal ---
