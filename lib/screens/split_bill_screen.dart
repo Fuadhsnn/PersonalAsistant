@@ -559,11 +559,13 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  // Navigation Bar (Option A: Unified Modern Tactile HIG)
+                  // Navigation Bar (Option B: iOS Large Title Standard)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                     child: TactileTopBar(
                       title: 'Split Bill ala GoPay',
+                      subtitle: 'Hitung patungan adil dengan AI scan struk.',
+                      useLargeTitle: true,
                       isDark: isDark,
                       leading: TactileTopBar.backButton(
                         onPressed: () {

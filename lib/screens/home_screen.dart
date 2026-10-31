@@ -65,6 +65,28 @@ class HomeScreen extends StatelessWidget {
                 title: 'ARIES • LIFE OS',
                 onOpenDrawer: onOpenDrawer,
                 isDark: isDark,
+                useLargeTitle: false,
+                centerWidget: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.apple,
+                      size: 18,
+                      color: AppleColors.textPrimary(isDark),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'ARIES • LIFE OS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                        color: AppleColors.textSecondary(isDark),
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ],
+                ),
                 rightAction: TactileTopBar.actionButton(
                   icon: Icon(
                     CupertinoIcons.gear_alt_fill,

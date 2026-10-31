@@ -43,12 +43,14 @@ class QuickLinksScreen extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        // Navigation Bar (Option A: Unified Modern Tactile HIG)
+        // Navigation Bar (Option B: iOS Large Title Standard)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: TactileTopBar(
               title: 'Pintasan Safari & Web',
+              subtitle: 'Akses cepat ke website & portal harian Anda.',
+              useLargeTitle: true,
               onOpenDrawer: onOpenDrawer,
               isDark: isDark,
               rightAction: TactileTopBar.actionButton(

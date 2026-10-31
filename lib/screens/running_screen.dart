@@ -189,12 +189,14 @@ class RunningScreen extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        // Top Navigation Bar (Option A: Unified Modern Tactile HIG)
+        // Top Navigation Bar (Option B: iOS Large Title Standard)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: TactileTopBar(
               title: 'Strava & Running',
+              subtitle: 'Tracking performa lari mingguan & mileage sepatu.',
+              useLargeTitle: true,
               onOpenDrawer: onOpenDrawer,
               isDark: isDark,
               rightAction: TactileTopBar.actionButton(

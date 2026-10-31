@@ -119,12 +119,14 @@ class _CalorieHabitScreenState extends State<CalorieHabitScreen> {
         CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
-            // Navigation Bar (Option A: Unified Modern Tactile HIG)
+            // Navigation Bar (Option B: iOS Large Title Standard)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: TactileTopBar(
                   title: 'Kalori & Kebiasaan',
+                  subtitle: 'Jurnal nutrisi harian & pemantauan kebiasaan positif.',
+                  useLargeTitle: true,
                   onOpenDrawer: widget.onOpenDrawer,
                   isDark: isDark,
                   rightAction: TactileTopBar.actionButton(

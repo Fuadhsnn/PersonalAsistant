@@ -214,6 +214,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return TactileTopBar(
       title: 'Kalender & Jadwal',
+      subtitle: 'Agenda kegiatan & timeline tersinkronisasi.',
+      useLargeTitle: true,
       onOpenDrawer: widget.onOpenDrawer,
       isDark: isDark,
       rightAction: CupertinoButton(

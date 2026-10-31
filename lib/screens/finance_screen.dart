@@ -175,12 +175,14 @@ class FinanceScreen extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        // Navigation Bar (Option A: Unified Modern Tactile HIG)
+        // Navigation Bar (Option B: iOS Large Title Standard)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: TactileTopBar(
               title: 'Keuangan & Runway',
+              subtitle: 'Odometer dana darurat, runway job hunting, & alokasi wishlist',
+              useLargeTitle: true,
               onOpenDrawer: onOpenDrawer,
               isDark: isDark,
               rightAction: TactileTopBar.actionButton(

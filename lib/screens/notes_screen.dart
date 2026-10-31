@@ -64,9 +64,11 @@ class _NotesScreenState extends State<NotesScreen> {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 40),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Top Bar (Option A: Unified Modern Tactile HIG)
+              // Top Bar (Option B: iOS Large Title Standard)
               TactileTopBar(
                 title: 'Catatan Cepat',
+                subtitle: 'Tersimpan otomatis ke memori lokal iPhone Anda.',
+                useLargeTitle: true,
                 onOpenDrawer: widget.onOpenDrawer,
                 isDark: isDark,
                 rightAction: TactileTopBar.actionButton(

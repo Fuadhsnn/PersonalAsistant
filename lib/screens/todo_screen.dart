@@ -34,9 +34,11 @@ class TodoScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Top Bar (Option A: Unified Modern Tactile HIG)
+              // Top Bar (Option B: iOS Large Title Standard)
               TactileTopBar(
                 title: 'To-Do & Pengingat',
+                subtitle: 'Kelola prioritas harian dan daftar tugas Anda.',
+                useLargeTitle: true,
                 onOpenDrawer: onOpenDrawer,
                 isDark: isDark,
                 rightAction: TactileTopBar.actionButton(
