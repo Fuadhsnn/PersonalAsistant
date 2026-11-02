@@ -1093,6 +1093,16 @@ class _GoogleSyncModalSheetState extends State<_GoogleSyncModalSheet> {
   String? _statusMessage;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!widget.state.isGoogleCalendarConnected) {
+        widget.state.reloadGoogleAuth();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _manualTokenController.dispose();
     super.dispose();
@@ -1618,6 +1628,26 @@ class _GoogleSyncModalSheetState extends State<_GoogleSyncModalSheet> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: AppleColors.systemBlue,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      if (widget.state.googleCalendarLastError != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppleColors.systemRed.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            widget.state.googleCalendarLastError!,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppleColors.systemRed,
                               decoration: TextDecoration.none,
                             ),
                           ),

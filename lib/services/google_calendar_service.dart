@@ -14,6 +14,8 @@ class GoogleCalendarService {
   static const String _gcalBaseUrl = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
   static const String defaultClientId = '179468744649-1pafrhhlehm3isudft1hsmodesn0j2pk.apps.googleusercontent.com';
 
+  String? lastError;
+
   /// Generates Google OAuth 2.0 Implicit Grant URL for client-side authorization
   String getOAuthAuthUrl({String? clientId, String? redirectUri}) {
     final cid = (clientId != null && clientId.isNotEmpty) ? clientId : defaultClientId;
@@ -42,8 +44,12 @@ class GoogleCalendarService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['email'] as String?;
+      } else {
+        lastError = 'UserInfo HTTP ${response.statusCode}: ${response.body}';
       }
-    } catch (_) {}
+    } catch (e) {
+      lastError = 'UserInfo Exception: $e';
+    }
     return null;
   }
 
@@ -125,9 +131,12 @@ class GoogleCalendarService {
             isMilestone: false,
           );
         }).toList();
+      } else {
+        lastError = 'Events HTTP ${response.statusCode}: ${response.body}';
       }
       return [];
-    } catch (_) {
+    } catch (e) {
+      lastError = 'Events Exception: $e';
       return [];
     }
   }

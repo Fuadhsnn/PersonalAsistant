@@ -36,10 +36,19 @@
         var search = window.location.search || '';
         var full = hash + '&' + search;
         var match = full.match(/access_token=([^&]+)/);
+        var token = null;
         if (match && match[1]) {
-          var token = decodeURIComponent(match[1]);
+          token = decodeURIComponent(match[1]);
+        }
+        if (!token) {
+          token = localStorage.getItem('hasan_dashboard_gcal_token_v1');
+        }
+        if (token) {
+          if (token.startsWith('"') && token.endsWith('"')) {
+            try { token = JSON.parse(token); } catch(e) {}
+          }
           localStorage.setItem('hasan_dashboard_gcal_token_v1', token);
-          localStorage.setItem('flutter.hasan_dashboard_gcal_token_v1', token);
+          localStorage.setItem('flutter.hasan_dashboard_gcal_token_v1', JSON.stringify(token));
         }
       } catch (e) {}
     })();

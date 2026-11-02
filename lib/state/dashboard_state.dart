@@ -117,6 +117,7 @@ class DashboardState extends ChangeNotifier {
   String? get googleUserEmail => _googleUserEmail;
   DateTime? get googleLastSync => _googleLastSync;
   bool get isSyncingGoogleCalendar => _isSyncingGoogleCalendar;
+  String? get googleCalendarLastError => _googleCalendarService.lastError;
 
   // Strava State
   final StravaService _stravaService = StravaService();
@@ -950,6 +951,24 @@ class DashboardState extends ChangeNotifier {
     _isGoogleCalendarSynced = !_isGoogleCalendarSynced;
     notifyListeners();
     await _storageService.saveIsGoogleCalendarSynced(_isGoogleCalendarSynced);
+  }
+
+  Future<bool> reloadGoogleAuth() async {
+    final token = await _storageService.loadGoogleAccessToken();
+    if (token != null && token.isNotEmpty) {
+      _googleAccessToken = token;
+      _isGoogleCalendarSynced = true;
+      if (_googleUserEmail == null || _googleUserEmail!.isEmpty) {
+        _googleUserEmail = await _googleCalendarService.fetchUserEmail(token);
+        if (_googleUserEmail != null) {
+          await _storageService.saveGoogleUserEmail(_googleUserEmail);
+        }
+      }
+      notifyListeners();
+      await syncGoogleCalendar();
+      return true;
+    }
+    return false;
   }
 
   Future<void> connectGoogleCalendar(String token) async {
