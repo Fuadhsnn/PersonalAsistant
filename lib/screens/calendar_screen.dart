@@ -64,6 +64,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }).toList();
   }
 
+  void _openGoogleSyncModal(BuildContext context) {
+    final isDark = widget.state.isDarkMode;
+    showCupertinoModalPopup(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => _GoogleSyncModalSheet(
+        state: widget.state,
+        isDark: isDark,
+      ),
+    );
+  }
+
   void _openAddEventModal([CalendarEventItem? initialEvent]) {
     final isDark = widget.state.isDarkMode;
     showCupertinoModalPopup(
@@ -210,7 +222,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildTopBar(bool isDark) {
-    final isSynced = widget.state.isGoogleCalendarSynced;
+    final isConnected = widget.state.isGoogleCalendarConnected;
 
     return TactileTopBar(
       title: 'Kalender & Jadwal',
@@ -221,9 +233,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       rightAction: CupertinoButton(
         padding: EdgeInsets.zero,
         minimumSize: Size.zero,
-        onPressed: () {
-          widget.state.toggleGoogleCalendarSync();
-        },
+        onPressed: () => _openGoogleSyncModal(context),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -248,7 +258,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: isSynced ? AppleColors.systemGreen : AppleColors.textSecondary(isDark),
+                  color: isConnected ? AppleColors.systemGreen : AppleColors.textSecondary(isDark),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -1059,6 +1069,562 @@ class _AddEventSheetState extends State<_AddEventSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GoogleSyncModalSheet extends StatefulWidget {
+  final DashboardState state;
+  final bool isDark;
+
+  const _GoogleSyncModalSheet({
+    required this.state,
+    required this.isDark,
+  });
+
+  @override
+  State<_GoogleSyncModalSheet> createState() => _GoogleSyncModalSheetState();
+}
+
+class _GoogleSyncModalSheetState extends State<_GoogleSyncModalSheet> {
+  final TextEditingController _manualTokenController = TextEditingController();
+  bool _isManualConnecting = false;
+  String? _statusMessage;
+
+  @override
+  void dispose() {
+    _manualTokenController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleOAuthLogin() async {
+    final url = widget.state.getGoogleOAuthUrl();
+    try {
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'Membuka Google OAuth... Setelah login, Anda akan dialihkan kembali ke ARIES.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'Gagal membuka Google OAuth. Pastikan pop-up diizinkan.';
+        });
+      }
+    }
+  }
+
+  Future<void> _handleManualConnect() async {
+    final token = _manualTokenController.text.trim();
+    if (token.isEmpty) return;
+
+    setState(() {
+      _isManualConnecting = true;
+      _statusMessage = null;
+    });
+
+    await widget.state.connectGoogleCalendar(token);
+
+    if (mounted) {
+      setState(() {
+        _isManualConnecting = false;
+        if (widget.state.isGoogleCalendarConnected) {
+          _statusMessage = 'Berhasil terhubung ke Google Calendar!';
+        } else {
+          _statusMessage = 'Gagal memverifikasi token. Pastikan token masih berlaku.';
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final isConnected = widget.state.isGoogleCalendarConnected;
+    final lastSync = widget.state.googleLastSync;
+    final lastSyncStr = lastSync != null
+        ? DateFormat('d MMM yyyy • HH:mm', 'id_ID').format(lastSync)
+        : 'Belum pernah';
+
+    return CupertinoTheme(
+      data: AppleTheme.cupertinoTheme(isDark),
+      child: Material(
+        type: MaterialType.transparency,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            decoration: TextDecoration.none,
+            fontFamily: GoogleFonts.inter().fontFamily,
+            color: AppleColors.textPrimary(isDark),
+            fontSize: 14,
+          ),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.82,
+            decoration: BoxDecoration(
+              color: AppleColors.bg(isDark),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Top Handle & Bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        child: Text(
+                          'Tutup',
+                          style: TextStyle(
+                            color: AppleColors.systemBlue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      Text(
+                        'Google Calendar Sync',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                          color: AppleColors.textPrimary(isDark),
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(width: 44),
+                    ],
+                  ),
+                ),
+                Container(height: 1, color: AppleColors.separator(isDark)),
+
+                // Body Content
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      if (isConnected) ...[
+                        // Connected Status Card
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: AppleColors.card(isDark),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppleColors.systemGreen.withValues(alpha: 0.4),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? const Color(0x22000000) : const Color(0x06000000),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: AppleColors.systemGreen.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        CupertinoIcons.checkmark_seal_fill,
+                                        color: AppleColors.systemGreen,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Google Calendar Terhubung',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppleColors.textPrimary(isDark),
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          widget.state.googleUserEmail ?? 'Akun Google Anda',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppleColors.textSecondary(isDark),
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppleColors.systemGreen.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Aktif ●',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppleColors.systemGreen,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              Container(height: 1, color: AppleColors.separator(isDark)),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Sinkronisasi Terakhir:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppleColors.textSecondary(isDark),
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                  Text(
+                                    lastSyncStr,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppleColors.textPrimary(isDark),
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Action 1: Tarik Jadwal Sekarang
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          color: AppleColors.systemBlue,
+                          borderRadius: BorderRadius.circular(16),
+                          onPressed: widget.state.isSyncingGoogleCalendar
+                              ? null
+                              : () async {
+                                  final count = await widget.state.syncGoogleCalendar();
+                                  if (mounted) {
+                                    setState(() {
+                                      _statusMessage = 'Berhasil memperbarui $count agenda dari Google Calendar!';
+                                    });
+                                  }
+                                },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (widget.state.isSyncingGoogleCalendar) ...[
+                                const CupertinoActivityIndicator(color: CupertinoColors.white),
+                                const SizedBox(width: 8),
+                              ] else ...[
+                                const Icon(CupertinoIcons.arrow_2_circlepath, size: 18, color: CupertinoColors.white),
+                                const SizedBox(width: 8),
+                              ],
+                              Text(
+                                widget.state.isSyncingGoogleCalendar
+                                    ? 'Menyinkronkan...'
+                                    : 'Tarik Jadwal Sekarang',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: CupertinoColors.white,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Action 2: Buka Google Calendar
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          color: AppleColors.card(isDark),
+                          borderRadius: BorderRadius.circular(16),
+                          onPressed: () {
+                            launchUrl(
+                              Uri.parse('https://calendar.google.com'),
+                              mode: LaunchMode.externalApplication,
+                            );
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(CupertinoIcons.calendar, size: 18, color: AppleColors.systemBlue),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Buka Google Calendar Web',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppleColors.textPrimary(isDark),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Action 3: Putuskan Tautan
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          onPressed: () async {
+                            await widget.state.disconnectGoogleCalendar();
+                            if (mounted) {
+                              setState(() {
+                                _statusMessage = 'Tautan Google Calendar diputuskan.';
+                              });
+                            }
+                          },
+                          child: const Text(
+                            'Putuskan Tautan Google Calendar',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppleColors.systemRed,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        // Not Connected Card
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppleColors.card(isDark),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? const Color(0x22000000) : const Color(0x06000000),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: AppleColors.systemBlue.withValues(alpha: 0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        CupertinoIcons.calendar_badge_plus,
+                                        size: 22,
+                                        color: AppleColors.systemBlue,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Two-Way Sync Kalender',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppleColors.textPrimary(isDark),
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Otomatis & Dua Arah',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppleColors.systemGreen,
+                                            fontWeight: FontWeight.w600,
+                                            decoration: TextDecoration.none,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Hubungkan akun Google Anda untuk menyinkronkan seluruh jadwal, kuliah, dan meeting secara otomatis ke ARIES.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  color: AppleColors.textSecondary(isDark),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'Client ID: 179468744649-...j2pk.apps.googleusercontent.com',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontFamily: 'monospace',
+                                    color: AppleColors.textSecondary(isDark),
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // 1-Tap Google OAuth Login Button
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          color: AppleColors.systemBlue,
+                          borderRadius: BorderRadius.circular(16),
+                          onPressed: _handleOAuthLogin,
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.g_mobiledata_rounded, size: 28, color: CupertinoColors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                'Login dengan Akun Google (1-Tap)',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: CupertinoColors.white,
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Divider OR
+                        Row(
+                          children: [
+                            Expanded(child: Container(height: 1, color: AppleColors.separator(isDark))),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'ATAU TEMPEL TOKEN MANUAL',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: AppleColors.textTertiary(isDark),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Container(height: 1, color: AppleColors.separator(isDark))),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Manual Token Input
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppleColors.card(isDark),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppleColors.cardBorder(isDark), width: 1),
+                          ),
+                          child: CupertinoTextField(
+                            controller: _manualTokenController,
+                            placeholder: 'Tempel Access Token Google (ya29...)',
+                            placeholderStyle: TextStyle(
+                              fontSize: 13,
+                              color: AppleColors.textTertiary(isDark),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppleColors.textPrimary(isDark),
+                            ),
+                            decoration: const BoxDecoration(),
+                            clearButtonMode: OverlayVisibilityMode.editing,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          color: AppleColors.card(isDark),
+                          borderRadius: BorderRadius.circular(14),
+                          onPressed: _isManualConnecting ? null : _handleManualConnect,
+                          child: Text(
+                            _isManualConnecting ? 'Memverifikasi...' : 'Hubungkan dengan Token',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppleColors.systemBlue,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      if (_statusMessage != null) ...[
+                        const SizedBox(height: 18),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppleColors.systemBlue.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _statusMessage!,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppleColors.systemBlue,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

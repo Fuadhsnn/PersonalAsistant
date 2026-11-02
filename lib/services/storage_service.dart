@@ -30,6 +30,9 @@ class StorageService {
   static const String _geminiApiKeyKey = 'hasan_dashboard_gemini_api_key';
   static const String _calendarEventsKey = 'hasan_dashboard_calendar_events_v1';
   static const String _googleCalendarSyncKey = 'hasan_dashboard_gcal_synced_v1';
+  static const String _googleAccessTokenKey = 'hasan_dashboard_gcal_token_v1';
+  static const String _googleUserEmailKey = 'hasan_dashboard_gcal_email_v1';
+  static const String _googleLastSyncKey = 'hasan_dashboard_gcal_last_sync_v1';
 
   Future<void> _ensureDummyWiped() async {
     final prefs = await SharedPreferences.getInstance();
@@ -403,6 +406,55 @@ class StorageService {
   Future<void> saveIsGoogleCalendarSynced(bool synced) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_googleCalendarSyncKey, synced);
+  }
+
+  Future<String?> loadGoogleAccessToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_googleAccessTokenKey);
+  }
+
+  Future<void> saveGoogleAccessToken(String? token) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (token == null || token.isEmpty) {
+      await prefs.remove(_googleAccessTokenKey);
+    } else {
+      await prefs.setString(_googleAccessTokenKey, token);
+    }
+  }
+
+  Future<String?> loadGoogleUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_googleUserEmailKey);
+  }
+
+  Future<void> saveGoogleUserEmail(String? email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (email == null || email.isEmpty) {
+      await prefs.remove(_googleUserEmailKey);
+    } else {
+      await prefs.setString(_googleUserEmailKey, email);
+    }
+  }
+
+  Future<DateTime?> loadGoogleCalendarLastSync() async {
+    final prefs = await SharedPreferences.getInstance();
+    final iso = prefs.getString(_googleLastSyncKey);
+    if (iso != null) {
+      return DateTime.tryParse(iso);
+    }
+    return null;
+  }
+
+  Future<void> saveGoogleCalendarLastSync(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_googleLastSyncKey, time.toIso8601String());
+  }
+
+  Future<void> clearGoogleAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_googleAccessTokenKey);
+    await prefs.remove(_googleUserEmailKey);
+    await prefs.remove(_googleLastSyncKey);
   }
 
   // --- Calorie Goal ---

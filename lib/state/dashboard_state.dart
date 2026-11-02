@@ -108,6 +108,15 @@ class DashboardState extends ChangeNotifier {
   List<CalendarEventItem> _calendarEvents = [];
   bool _isGoogleCalendarSynced = true;
   final GoogleCalendarService _googleCalendarService = GoogleCalendarService();
+  String? _googleAccessToken;
+  String? _googleUserEmail;
+  DateTime? _googleLastSync;
+  bool _isSyncingGoogleCalendar = false;
+
+  bool get isGoogleCalendarConnected => _googleAccessToken != null && _googleAccessToken!.isNotEmpty;
+  String? get googleUserEmail => _googleUserEmail;
+  DateTime? get googleLastSync => _googleLastSync;
+  bool get isSyncingGoogleCalendar => _isSyncingGoogleCalendar;
 
   // Strava State
   final StravaService _stravaService = StravaService();
@@ -227,6 +236,28 @@ class DashboardState extends ChangeNotifier {
     _splitBills = await _storageService.loadSplitBills();
     _calendarEvents = await _storageService.loadCalendarEvents();
     _isGoogleCalendarSynced = await _storageService.loadIsGoogleCalendarSynced();
+    _googleAccessToken = await _storageService.loadGoogleAccessToken();
+    _googleUserEmail = await _storageService.loadGoogleUserEmail();
+    _googleLastSync = await _storageService.loadGoogleCalendarLastSync();
+
+    // Check if browser URL has OAuth access_token fragment (e.g. redirected from Google OAuth)
+    final uri = Uri.base;
+    if (uri.fragment.isNotEmpty && uri.fragment.contains('access_token=')) {
+      final params = Uri.splitQueryString(uri.fragment);
+      final token = params['access_token'];
+      if (token != null && token.isNotEmpty) {
+        _googleAccessToken = token;
+        await _storageService.saveGoogleAccessToken(token);
+        _googleUserEmail = await _googleCalendarService.fetchUserEmail(token);
+        if (_googleUserEmail != null) {
+          await _storageService.saveGoogleUserEmail(_googleUserEmail);
+        }
+      }
+    }
+
+    if (isGoogleCalendarConnected) {
+      syncGoogleCalendar();
+    }
     _geminiApiKey = await _storageService.loadGeminiApiKey();
     _calorieGoal = await _storageService.loadCalorieGoal();
     _walletStartingBalance = await _storageService.loadWalletStartingBalance();
@@ -883,6 +914,10 @@ class DashboardState extends ChangeNotifier {
     _calendarEvents.add(event);
     notifyListeners();
     await _storageService.saveCalendarEvents(_calendarEvents);
+
+    if (isGoogleCalendarConnected && _googleAccessToken != null) {
+      _googleCalendarService.pushEventToGoogle(event, _googleAccessToken!);
+    }
   }
 
   Future<void> updateCalendarEvent(CalendarEventItem event) async {
@@ -891,6 +926,9 @@ class DashboardState extends ChangeNotifier {
       _calendarEvents[idx] = event;
       notifyListeners();
       await _storageService.saveCalendarEvents(_calendarEvents);
+      if (isGoogleCalendarConnected && _googleAccessToken != null) {
+        _googleCalendarService.pushEventToGoogle(event, _googleAccessToken!);
+      }
     }
   }
 
@@ -898,6 +936,10 @@ class DashboardState extends ChangeNotifier {
     _calendarEvents.removeWhere((e) => e.id == id);
     notifyListeners();
     await _storageService.saveCalendarEvents(_calendarEvents);
+
+    if (isGoogleCalendarConnected && _googleAccessToken != null && !id.startsWith('cal_')) {
+      _googleCalendarService.deleteEventFromGoogle(id, _googleAccessToken!);
+    }
   }
 
   Future<void> clearAllCalendarEvents() async {
@@ -910,6 +952,60 @@ class DashboardState extends ChangeNotifier {
     _isGoogleCalendarSynced = !_isGoogleCalendarSynced;
     notifyListeners();
     await _storageService.saveIsGoogleCalendarSynced(_isGoogleCalendarSynced);
+  }
+
+  Future<void> connectGoogleCalendar(String token) async {
+    _googleAccessToken = token.trim();
+    _isGoogleCalendarSynced = true;
+    await _storageService.saveGoogleAccessToken(_googleAccessToken);
+    await _storageService.saveIsGoogleCalendarSynced(true);
+
+    final email = await _googleCalendarService.fetchUserEmail(_googleAccessToken!);
+    if (email != null) {
+      _googleUserEmail = email;
+      await _storageService.saveGoogleUserEmail(email);
+    }
+    notifyListeners();
+    await syncGoogleCalendar();
+  }
+
+  Future<void> disconnectGoogleCalendar() async {
+    _googleAccessToken = null;
+    _googleUserEmail = null;
+    _googleLastSync = null;
+    await _storageService.clearGoogleAuth();
+    notifyListeners();
+  }
+
+  Future<int> syncGoogleCalendar() async {
+    if (!isGoogleCalendarConnected || _googleAccessToken == null) return 0;
+    _isSyncingGoogleCalendar = true;
+    notifyListeners();
+
+    try {
+      final remoteEvents = await _googleCalendarService.fetchEventsFromGoogle(_googleAccessToken!);
+      if (remoteEvents.isNotEmpty) {
+        final localNonGoogle = _calendarEvents
+            .where((e) => !e.id.startsWith('gcal_') && !remoteEvents.any((r) => r.id == e.id))
+            .toList();
+        _calendarEvents = [...localNonGoogle, ...remoteEvents];
+        _calendarEvents.sort((a, b) => a.startTime.compareTo(b.startTime));
+        await _storageService.saveCalendarEvents(_calendarEvents);
+      }
+      _googleLastSync = DateTime.now();
+      await _storageService.saveGoogleCalendarLastSync(_googleLastSync!);
+      _isSyncingGoogleCalendar = false;
+      notifyListeners();
+      return remoteEvents.length;
+    } catch (_) {
+      _isSyncingGoogleCalendar = false;
+      notifyListeners();
+      return 0;
+    }
+  }
+
+  String getGoogleOAuthUrl() {
+    return _googleCalendarService.getOAuthAuthUrl();
   }
 
   Future<CalendarEventItem?> createEventFromNaturalLanguage(String text) async {

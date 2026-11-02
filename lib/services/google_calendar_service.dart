@@ -12,6 +12,125 @@ class GoogleCalendarService {
   ];
 
   static const String _gcalBaseUrl = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+  static const String defaultClientId = '179468744649-1pafrhhlehm3isudft1hsmodesn0j2pk.apps.googleusercontent.com';
+
+  /// Generates Google OAuth 2.0 Implicit Grant URL for client-side authorization
+  String getOAuthAuthUrl({String? clientId, String? redirectUri}) {
+    final cid = (clientId != null && clientId.isNotEmpty) ? clientId : defaultClientId;
+    final rUri = (redirectUri != null && redirectUri.isNotEmpty)
+        ? redirectUri
+        : 'https://aries-seven-pearl.vercel.app';
+    const scope = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email';
+    
+    return 'https://accounts.google.com/o/oauth2/v2/auth'
+        '?client_id=${Uri.encodeComponent(cid)}'
+        '&redirect_uri=${Uri.encodeComponent(rUri)}'
+        '&response_type=token'
+        '&scope=${Uri.encodeComponent(scope)}'
+        '&prompt=consent'
+        '&include_granted_scopes=true';
+  }
+
+  /// Fetches Google User Profile (email, name)
+  Future<String?> fetchUserEmail(String accessToken) async {
+    try {
+      final url = Uri.parse('https://www.googleapis.com/oauth2/v3/userinfo');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['email'] as String?;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Fetch events from Google Calendar API v3
+  Future<List<CalendarEventItem>> fetchEventsFromGoogle(
+    String accessToken, {
+    int daysPast = 7,
+    int daysAhead = 60,
+  }) async {
+    try {
+      final now = DateTime.now().toUtc();
+      final timeMin = now.subtract(Duration(days: daysPast)).toIso8601String();
+      final timeMax = now.add(Duration(days: daysAhead)).toIso8601String();
+
+      final url = Uri.parse(
+        '$_gcalBaseUrl?timeMin=${Uri.encodeComponent(timeMin)}&timeMax=${Uri.encodeComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=100',
+      );
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final List<dynamic> items = data['items'] ?? [];
+        return items.map((item) {
+          final startMap = item['start'] as Map<String, dynamic>? ?? {};
+          final endMap = item['end'] as Map<String, dynamic>? ?? {};
+
+          DateTime start = DateTime.now();
+          bool isAllDay = false;
+          if (startMap['dateTime'] != null) {
+            start = DateTime.tryParse(startMap['dateTime'])?.toLocal() ?? DateTime.now();
+          } else if (startMap['date'] != null) {
+            start = DateTime.tryParse(startMap['date'])?.toLocal() ?? DateTime.now();
+            isAllDay = true;
+          }
+
+          DateTime end = start.add(const Duration(hours: 1));
+          if (endMap['dateTime'] != null) {
+            end = DateTime.tryParse(endMap['dateTime'])?.toLocal() ?? end;
+          } else if (endMap['date'] != null) {
+            end = DateTime.tryParse(endMap['date'])?.toLocal() ?? end;
+          }
+
+          // Check if meeting link exists (Google Meet or Zoom)
+          String? meetLink;
+          final hangoutLink = item['hangoutLink'] as String?;
+          if (hangoutLink != null && hangoutLink.isNotEmpty) {
+            meetLink = hangoutLink;
+          } else {
+            final conf = item['conferenceData'] as Map<String, dynamic>?;
+            final entryPoints = conf?['entryPoints'] as List<dynamic>?;
+            if (entryPoints != null && entryPoints.isNotEmpty) {
+              meetLink = entryPoints.first['uri'] as String?;
+            }
+          }
+
+          final summary = item['summary'] as String? ?? 'Acara Google Calendar';
+          final description = item['description'] as String? ?? '';
+          final location = item['location'] as String? ?? '';
+          final id = item['id'] as String? ?? 'gcal_${DateTime.now().millisecondsSinceEpoch}';
+
+          return CalendarEventItem(
+            id: id,
+            title: summary,
+            description: description,
+            startTime: start,
+            endTime: end,
+            isAllDay: isAllDay,
+            location: location,
+            meetLink: meetLink,
+            category: 'Teknologi',
+            colorHex: '0xFF00A3FF',
+            isMilestone: false,
+          );
+        }).toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
 
   /// Parses natural language input using Google Gemini into a CalendarEventItem
   Future<CalendarEventItem?> parseNaturalLanguageEvent({
