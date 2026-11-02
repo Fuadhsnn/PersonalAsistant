@@ -28,6 +28,23 @@
   <title>ARIES</title>
   <link rel="manifest" href="manifest.json">
 
+  <script>
+    // Capture Google OAuth token immediately before Flutter router normalizes the hash
+    (function() {
+      try {
+        var hash = window.location.hash || '';
+        var search = window.location.search || '';
+        var full = hash + '&' + search;
+        var match = full.match(/access_token=([^&]+)/);
+        if (match && match[1]) {
+          var token = decodeURIComponent(match[1]);
+          localStorage.setItem('hasan_dashboard_gcal_token_v1', token);
+          localStorage.setItem('flutter.hasan_dashboard_gcal_token_v1', token);
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <style>
     /* Lock viewport and prevent Safari scroll offset desynchronization */
     html, body {

@@ -240,22 +240,20 @@ class DashboardState extends ChangeNotifier {
     _googleUserEmail = await _storageService.loadGoogleUserEmail();
     _googleLastSync = await _storageService.loadGoogleCalendarLastSync();
 
-    // Check if browser URL has OAuth access_token fragment (e.g. redirected from Google OAuth)
-    final uri = Uri.base;
-    if (uri.fragment.isNotEmpty && uri.fragment.contains('access_token=')) {
-      final params = Uri.splitQueryString(uri.fragment);
-      final token = params['access_token'];
-      if (token != null && token.isNotEmpty) {
-        _googleAccessToken = token;
-        await _storageService.saveGoogleAccessToken(token);
-        _googleUserEmail = await _googleCalendarService.fetchUserEmail(token);
+    // Check if browser URL has OAuth access_token (redirected from Google OAuth)
+    final extractedToken = _extractGoogleOAuthToken();
+    if (extractedToken != null && extractedToken.isNotEmpty) {
+      _googleAccessToken = extractedToken;
+      await _storageService.saveGoogleAccessToken(extractedToken);
+    }
+
+    if (isGoogleCalendarConnected) {
+      if (_googleUserEmail == null || _googleUserEmail!.isEmpty) {
+        _googleUserEmail = await _googleCalendarService.fetchUserEmail(_googleAccessToken!);
         if (_googleUserEmail != null) {
           await _storageService.saveGoogleUserEmail(_googleUserEmail);
         }
       }
-    }
-
-    if (isGoogleCalendarConnected) {
       syncGoogleCalendar();
     }
     _geminiApiKey = await _storageService.loadGeminiApiKey();
@@ -1006,6 +1004,21 @@ class DashboardState extends ChangeNotifier {
 
   String getGoogleOAuthUrl() {
     return _googleCalendarService.getOAuthAuthUrl();
+  }
+
+  String? _extractGoogleOAuthToken() {
+    try {
+      final uri = Uri.base;
+      final fullUrl = '${uri.toString()}&${uri.fragment}&${uri.query}';
+      if (fullUrl.contains('access_token=')) {
+        final regExp = RegExp(r'access_token=([^&]+)');
+        final match = regExp.firstMatch(fullUrl);
+        if (match != null && match.groupCount >= 1) {
+          return Uri.decodeComponent(match.group(1)!);
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   Future<CalendarEventItem?> createEventFromNaturalLanguage(String text) async {

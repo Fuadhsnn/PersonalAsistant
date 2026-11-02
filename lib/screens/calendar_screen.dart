@@ -1102,17 +1102,22 @@ class _GoogleSyncModalSheetState extends State<_GoogleSyncModalSheet> {
     final url = widget.state.getGoogleOAuthUrl();
     try {
       final uri = Uri.parse(url);
-      await launchUrl(uri, mode: LaunchMode.platformDefault);
+      await launchUrl(uri, webOnlyWindowName: '_self');
       if (mounted) {
         setState(() {
           _statusMessage = 'Membuka Google OAuth... Setelah login, Anda akan dialihkan kembali ke ARIES.';
         });
       }
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _statusMessage = 'Gagal membuka Google OAuth. Pastikan pop-up diizinkan.';
-        });
+      try {
+        final uri = Uri.parse(url);
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _statusMessage = 'Gagal membuka Google OAuth. Pastikan pop-up diizinkan.';
+          });
+        }
       }
     }
   }

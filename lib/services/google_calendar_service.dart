@@ -50,8 +50,8 @@ class GoogleCalendarService {
   /// Fetch events from Google Calendar API v3
   Future<List<CalendarEventItem>> fetchEventsFromGoogle(
     String accessToken, {
-    int daysPast = 7,
-    int daysAhead = 60,
+    int daysPast = 30,
+    int daysAhead = 180,
   }) async {
     try {
       final now = DateTime.now().toUtc();
@@ -59,7 +59,7 @@ class GoogleCalendarService {
       final timeMax = now.add(Duration(days: daysAhead)).toIso8601String();
 
       final url = Uri.parse(
-        '$_gcalBaseUrl?timeMin=${Uri.encodeComponent(timeMin)}&timeMax=${Uri.encodeComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=100',
+        '$_gcalBaseUrl?timeMin=${Uri.encodeComponent(timeMin)}&timeMax=${Uri.encodeComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=250',
       );
 
       final response = await http.get(
